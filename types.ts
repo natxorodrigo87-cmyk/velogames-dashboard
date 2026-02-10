@@ -1,0 +1,53 @@
+
+export type Category = {
+  id: string;
+  name: string;
+};
+
+export type Player = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+export enum RaceStatus {
+  PLAYED = 'played',
+  UPCOMING = 'upcoming'
+}
+
+export type Race = {
+  id: string;
+  name: string;
+  categoryId: string;
+  date: string;
+  status: RaceStatus;
+};
+
+export type Result = {
+  id: string;
+  raceId: string;
+  playerId: string;
+  points: number;
+};
+
+export type GlobalStats = {
+  playerId: string;
+  totalPoints: number;
+  racesWon: number;
+  averagePoints: number;
+};
+
+export type ChartDataPoint = {
+  raceName: string;
+  date: string;
+  [key: string]: string | number;
+};
+
+export type LeagueSummary = {
+  leaderName: string;
+  leaderColor: string;
+  totalRaces: number;
+  completedRaces: number;
+  topScore: number;
+  topScorePlayer: string;
+};

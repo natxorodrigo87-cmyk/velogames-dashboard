@@ -1,0 +1,5 @@
+{
+  "name": "DEF Velogames Dashboard",
+  "description": "An interactive dashboard for a private Velogames cycling league. Track points evolution, race details, and annual classifications with a modern, mobile-first design.",
+  "requestFramePermissions": []
+}

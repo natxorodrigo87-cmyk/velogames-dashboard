@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
-import Layout from './components/Layout';
-import GeneralTable from './components/GeneralTable';
-import EvolutionChart from './components/EvolutionChart';
-import RaceDetails from './components/RaceDetails';
-import Filters from './components/Filters';
-import SummaryCards from './components/SummaryCards';
-import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES } from './mockData';
-import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types';
+import Layout from './components/Layout.tsx';
+import GeneralTable from './components/GeneralTable.tsx';
+import EvolutionChart from './components/EvolutionChart.tsx';
+import RaceDetails from './components/RaceDetails.tsx';
+import Filters from './components/Filters.tsx';
+import SummaryCards from './components/SummaryCards.tsx';
+import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES } from './mockData.ts';
+import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
 
 const App: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -23,7 +23,6 @@ const App: React.FC = () => {
         const raceResults = RESULTS.filter(res => res.raceId === race.id);
         const maxPoints = Math.max(...raceResults.map(r => r.points));
         const playerResult = raceResults.find(r => r.playerId === player.id);
-        // Solo cuenta como victoria si tienes el máximo Y puntos > 0
         if (playerResult && playerResult.points === maxPoints && playerResult.points > 0) {
           racesWon++;
         }

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Trophy, Bike } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -53,13 +53,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {children}
           </main>
 
-          {/* Botón Procyclingstats */}
-          <div className="mt-16 flex justify-center">
+          {/* Botones de enlaces externos */}
+          <div className="mt-16 flex flex-col md:flex-row items-stretch md:items-center justify-center gap-6">
+            {/* Botón Procyclingstats */}
             <a 
               href="https://www.procyclingstats.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group relative flex items-center gap-4 px-6 py-4 bg-slate-900/60 border border-white/10 rounded-2xl hover:border-blue-500/50 transition-all duration-300 shadow-2xl backdrop-blur-md overflow-hidden"
+              className="group relative flex items-center gap-4 px-6 py-4 bg-slate-900/60 border border-white/10 rounded-2xl hover:border-blue-500/50 transition-all duration-300 shadow-2xl backdrop-blur-md overflow-hidden flex-1 max-w-sm"
             >
               <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors"></div>
               <div className="p-2 rounded-lg bg-blue-600/20 text-blue-400 group-hover:scale-110 transition-transform">
@@ -68,6 +69,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <p className="relative text-[10px] md:text-xs font-black text-slate-400 group-hover:text-blue-400 uppercase tracking-[0.15em] transition-colors leading-relaxed">
                 La mejor información del ciclismo en <br />
                 <span className="text-white text-sm md:text-base italic tracking-tighter">Procyclingstats.com</span>
+              </p>
+            </a>
+
+            {/* Botón Velogames */}
+            <a 
+              href="https://www.velogames.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group relative flex items-center gap-4 px-6 py-4 bg-slate-900/60 border border-white/10 rounded-2xl hover:border-yellow-500/50 transition-all duration-300 shadow-2xl backdrop-blur-md overflow-hidden flex-1 max-w-sm"
+            >
+              <div className="absolute inset-0 bg-yellow-600/5 group-hover:bg-yellow-600/10 transition-colors"></div>
+              <div className="p-2 rounded-lg bg-yellow-600/20 text-yellow-500 group-hover:scale-110 transition-transform">
+                <Bike className="w-5 h-5" />
+              </div>
+              <p className="relative text-[10px] md:text-xs font-black text-slate-400 group-hover:text-yellow-500 uppercase tracking-[0.15em] transition-colors leading-relaxed">
+                Elige tu equipo en <br />
+                <span className="text-white text-sm md:text-base italic tracking-tighter">Velogames.com</span>
               </p>
             </a>
           </div>

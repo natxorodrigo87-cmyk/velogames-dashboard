@@ -1,5 +1,5 @@
 
-import { Player, Category, Race, Result, RaceStatus } from './types';
+import { Player, Category, Race, Result, RaceStatus, MortadelaEntry } from './types';
 
 export const PLAYERS: Player[] = [
   { id: 'p1', name: 'US POSTAL', color: '#1e40af' },
@@ -13,6 +13,14 @@ export const CATEGORIES: Category[] = [
   { id: 'c2', name: 'CATEGORÍA 2 (9-6-4-2)' },
   { id: 'c3', name: 'CATEGORÍA 3 (5-3-2-1)' },
   { id: 'c4', name: 'CATEGORÍA 4 (3-2-1-0)' },
+];
+
+export const MORTADELAS: MortadelaEntry[] = [
+  { cyclist: 'Hvideberg', points: 96, playerName: 'US POSTAL', raceName: 'Oman' },
+  { cyclist: 'Vanghelewe', points: 48, playerName: 'US POSTAL', raceName: 'Oman' },
+  { cyclist: 'Froidevaux', points: 194, playerName: 'LA GALIA', raceName: 'Alula' },
+  { cyclist: 'Mouris', points: 138, playerName: 'US POSTAL', raceName: 'Besseges' },
+  { cyclist: 'Van Der Tuk', points: 190, playerName: 'US POSTAL', raceName: 'Valenciana' },
 ];
 
 export const RACES: Race[] = [

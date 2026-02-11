@@ -30,6 +30,13 @@ export type Result = {
   points: number;
 };
 
+export type MortadelaEntry = {
+  cyclist: string;
+  points: number;
+  playerName: string;
+  raceName: string;
+};
+
 export type GlobalStats = {
   playerId: string;
   totalPoints: number;

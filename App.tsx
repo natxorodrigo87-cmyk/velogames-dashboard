@@ -11,11 +11,12 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, BrainCircuit, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Flame, Search, BookOpen, X } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'general' | 'mortadela' | 'ai'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
 
   // Calculate global stats
   const stats = useMemo<GlobalStats[]>(() => {
@@ -107,8 +108,7 @@ const App: React.FC = () => {
       <SummaryCards summary={summary} />
 
       {/* Navegación Principal */}
-      <div className="flex flex-col gap-4 max-w-md mx-auto md:mx-0 mb-10">
-        {/* Selector de Pestañas (Solo 2 botones ahora) */}
+      <div className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0 mb-10">
         <div className="flex items-center p-1.5 bg-slate-900/60 border border-white/5 rounded-2xl backdrop-blur-md">
           <button
             onClick={() => setActiveTab('general')}
@@ -133,47 +133,65 @@ const App: React.FC = () => {
             Records
           </button>
         </div>
-
-        {/* Botón "Entrenador Personal" debajo de los otros botones */}
-        <button 
-          onClick={() => setActiveTab('ai')}
-          className={`w-full relative group overflow-hidden p-4 rounded-2xl shadow-xl border transition-all active:scale-95 ${
-            activeTab === 'ai' 
-              ? 'bg-purple-600 border-purple-400/50 shadow-purple-900/40' 
-              : 'bg-gradient-to-r from-purple-900/40 to-slate-900/60 border-white/5 hover:border-purple-500/30'
-          }`}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.15)_0%,_transparent_100%)]"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-xl backdrop-blur-md ${activeTab === 'ai' ? 'bg-white/20' : 'bg-purple-600/20 text-purple-400'}`}>
-                <BrainCircuit className={`w-5 h-5 ${activeTab === 'ai' ? 'text-white' : 'text-purple-400'}`} />
-              </div>
-              <div className="text-left">
-                <span className={`block text-[8px] font-black uppercase tracking-widest leading-none mb-1 ${activeTab === 'ai' ? 'text-purple-200' : 'text-purple-500'}`}>
-                  PCS Live Advisor
-                </span>
-                <span className="block text-sm font-black text-white uppercase italic tracking-tighter leading-none">
-                  Entrenador Personal
-                </span>
-              </div>
-            </div>
-            <ArrowRight className={`w-4 h-4 transition-transform ${activeTab === 'ai' ? 'text-white translate-x-1' : 'text-slate-600 group-hover:text-purple-400'}`} />
-          </div>
-        </button>
       </div>
 
       {activeTab === 'general' ? (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
             <div className="lg:col-span-2 order-2 lg:order-1">
               <EvolutionChart data={chartData} players={PLAYERS} />
             </div>
             
-            <div className="order-1 lg:order-2">
+            <div className="order-1 lg:order-2 flex flex-col gap-6">
               <GeneralTable players={PLAYERS} stats={stats} />
+              
+              {/* BLOQUE DE IA ESPECIALIZADA */}
+              <div className="grid grid-cols-1 gap-3">
+                <button 
+                  onClick={() => setActiveAI('pcs')}
+                  className="group relative flex items-center gap-4 p-4 bg-slate-900 border border-blue-500/20 rounded-2xl hover:border-blue-500 transition-all shadow-xl overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors" />
+                  <div className="p-3 bg-blue-600 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[10px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Análisis Real</span>
+                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">IA de Procyclingstats</span>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => setActiveAI('encyclopedia')}
+                  className="group relative flex items-center gap-4 p-4 bg-slate-900 border border-amber-500/20 rounded-2xl hover:border-amber-500 transition-all shadow-xl overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-amber-600/5 group-hover:bg-amber-600/10 transition-colors" />
+                  <div className="p-3 bg-amber-600 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="block text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1">Cultura & Historia</span>
+                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">Enciclopedia del Ciclismo</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* ASISTENTE AI OVERLAY */}
+          {activeAI && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+              <div className="relative w-full max-w-4xl max-h-[90vh]">
+                <button 
+                  onClick={() => setActiveAI(null)}
+                  className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <CyclingAI mode={activeAI} />
+              </div>
+            </div>
+          )}
 
           <div className="mt-16">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -196,7 +214,7 @@ const App: React.FC = () => {
             />
           </div>
         </>
-      ) : activeTab === 'mortadela' ? (
+      ) : (
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="max-w-4xl mx-auto">
              <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
@@ -212,8 +230,6 @@ const App: React.FC = () => {
 
           <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>
-      ) : (
-        <CyclingAI />
       )}
     </Layout>
   );

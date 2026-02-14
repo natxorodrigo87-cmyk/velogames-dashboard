@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MortadelaEntry, Player } from '../types';
-import { Sparkles, Medal } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface MortadelaTableProps {
   entries: MortadelaEntry[];
@@ -35,9 +35,12 @@ const MortadelaTable: React.FC<MortadelaTableProps> = ({ entries, players }) => 
           </thead>
           <tbody className="divide-y divide-white/5">
             {sortedEntries.map((entry, index) => {
-              const player = players.find(p => p.name === entry.playerName);
-              const isTop3 = index < 3;
-              
+              // Manejo de entradas compartidas (ej: "CHARLOTTE / POSTAL")
+              const playerNames = entry.playerName.split(' / ').map(n => n.trim());
+              const matchedPlayers = playerNames.map(name => 
+                players.find(p => p.name.includes(name) || name.includes(p.name))
+              ).filter(Boolean) as Player[];
+
               return (
                 <tr key={`${entry.cyclist}-${index}`} className="group hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
@@ -64,7 +67,13 @@ const MortadelaTable: React.FC<MortadelaTableProps> = ({ entries, players }) => 
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: player?.color || '#ccc' }} />
+                      <div className="flex -space-x-1">
+                        {matchedPlayers.length > 0 ? matchedPlayers.map((p, idx) => (
+                          <div key={idx} className="w-2 h-2 rounded-full border border-slate-950" style={{ backgroundColor: p.color }} title={p.name} />
+                        )) : (
+                          <div className="w-2 h-2 rounded-full bg-slate-600" />
+                        )}
+                      </div>
                       <span className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">
                         {entry.playerName}
                       </span>

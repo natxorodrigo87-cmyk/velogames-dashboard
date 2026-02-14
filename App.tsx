@@ -8,12 +8,13 @@ import Filters from './components/Filters.tsx';
 import SummaryCards from './components/SummaryCards.tsx';
 import MortadelaTable from './components/MortadelaTable.tsx';
 import AbandonosTable from './components/AbandonosTable.tsx';
-import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS } from './mockData.ts';
+import CyclingAI from './components/CyclingAI.tsx';
+import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame } from 'lucide-react';
+import { LayoutDashboard, Flame, BrainCircuit } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'mortadela' | 'ai'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   // Calculate global stats
@@ -127,7 +128,18 @@ const App: React.FC = () => {
           }`}
         >
           <Flame className="w-4 h-4" />
-          Mejores Mortadelas
+          Records y Bajas
+        </button>
+        <button
+          onClick={() => setActiveTab('ai')}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            activeTab === 'ai' 
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
+              : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          <BrainCircuit className="w-4 h-4" />
+          IA Advisor
         </button>
       </div>
 
@@ -163,21 +175,24 @@ const App: React.FC = () => {
             />
           </div>
         </>
-      ) : (
-        <div className="max-w-4xl mx-auto">
-          <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
-          
-          <div className="mt-12 p-8 bg-amber-500/5 border border-amber-500/10 rounded-3xl text-center">
-            <h3 className="text-xl font-black text-amber-500 uppercase italic tracking-tighter mb-2">¿Qué es una Mortadela?</h3>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mx-auto italic">
-              "Dícese de aquel rendimiento ciclista individual que rompe todos los esquemas, 
-              consiguiendo una puntuación desorbitada en una sola carrera. Un hito de fuerza bruta 
-              y mortadela que solo los elegidos pueden alcanzar."
-            </p>
+      ) : activeTab === 'mortadela' ? (
+        <div className="max-w-6xl mx-auto space-y-12">
+          <div className="max-w-4xl mx-auto">
+             <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
+             <div className="mt-12 p-8 bg-amber-500/5 border border-amber-500/10 rounded-3xl text-center">
+                <h3 className="text-xl font-black text-amber-500 uppercase italic tracking-tighter mb-2">¿Qué es una Mortadela?</h3>
+                <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mx-auto italic">
+                  "Dícese de aquel rendimiento ciclista individual que rompe todos los esquemas, 
+                  consiguiendo una puntuación desorbitada en una sola carrera. Un hito de fuerza bruta 
+                  y mortadela que solo los elegidos pueden alcanzar."
+                </p>
+              </div>
           </div>
 
-          <AbandonosTable />
+          <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>
+      ) : (
+        <CyclingAI />
       )}
     </Layout>
   );

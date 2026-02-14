@@ -37,6 +37,14 @@ export type MortadelaEntry = {
   raceName: string;
 };
 
+export type WithdrawalRecord = {
+  playerName: string;
+  races: {
+    [raceName: string]: string; // Lista de ciclistas o "0" / "no la hizo"
+  };
+  total: number;
+};
+
 export type GlobalStats = {
   playerId: string;
   totalPoints: number;

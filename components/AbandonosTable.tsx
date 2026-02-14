@@ -1,8 +1,16 @@
 
 import React from 'react';
-import { UserX, Clock } from 'lucide-react';
+import { UserX } from 'lucide-react';
+import { WithdrawalRecord, Player } from '../types';
 
-const AbandonosTable: React.FC = () => {
+interface AbandonosTableProps {
+  records: WithdrawalRecord[];
+  players: Player[];
+}
+
+const AbandonosTable: React.FC<AbandonosTableProps> = ({ records, players }) => {
+  const races = ['TDU', 'Alula', 'CV', 'Besseges', 'Omán'];
+
   return (
     <div className="bg-slate-900/80 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 mt-8">
       <div className="p-6 border-b border-white/5 bg-gradient-to-r from-red-500/10 to-transparent flex items-center justify-between">
@@ -10,40 +18,48 @@ const AbandonosTable: React.FC = () => {
           <UserX className="text-red-500 w-5 h-5" />
           Muro de los <span className="text-red-500">Lamentaciones</span>
         </h2>
-        <div className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-1.5">
-          <Clock className="w-3 h-3" />
-          Pendiente
+        <div className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-[10px] font-black text-red-500 uppercase tracking-widest">
+          Retiradas
         </div>
       </div>
       
-      <div className="p-12 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 border border-white/5 mb-4">
-          <UserX className="w-8 h-8 text-slate-600" />
-        </div>
-        <h3 className="text-white font-black uppercase italic tracking-tight text-lg">Sin bajas confirmadas</h3>
-        <p className="text-slate-500 text-xs font-medium mt-2 max-w-sm mx-auto uppercase tracking-wider leading-relaxed">
-          Esta sección se actualizará automáticamente conforme los corredores decidan que el sofá es mejor que el pedal.
-        </p>
-        <div className="mt-6 inline-block px-4 py-2 bg-white/5 rounded-xl border border-white/5 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">
-          Waiting for the next crash...
-        </div>
-      </div>
-
-      <div className="overflow-x-auto opacity-20 grayscale pointer-events-none">
+      <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-950/50">
-              <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Ciclista</th>
-              <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Carrera</th>
-              <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Motivo</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Equipo</th>
+              {races.map(race => (
+                <th key={race} className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{race}</th>
+              ))}
+              <th className="px-6 py-4 text-[10px] font-black text-red-500 uppercase tracking-[0.2em] text-right">Total</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td className="px-6 py-4 text-slate-600 font-bold uppercase text-xs italic">---</td>
-              <td className="px-6 py-4 text-slate-600 font-bold uppercase text-xs italic">---</td>
-              <td className="px-6 py-4 text-slate-600 font-bold uppercase text-xs italic">---</td>
-            </tr>
+          <tbody className="divide-y divide-white/5">
+            {records.map((record) => {
+              const player = players.find(p => p.name === record.playerName);
+              return (
+                <tr key={record.playerName} className="group hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: player?.color }} />
+                      <span className="text-xs font-black text-white uppercase tracking-tight">{record.playerName}</span>
+                    </div>
+                  </td>
+                  {races.map(race => (
+                    <td key={race} className="px-6 py-4">
+                      <div className={`text-[10px] font-medium leading-relaxed ${record.races[race] === '0' ? 'text-slate-600 italic' : record.races[race] === 'no la hizo' ? 'text-slate-500 italic line-through' : 'text-slate-300 italic'}`}>
+                        {record.races[race]}
+                      </div>
+                    </td>
+                  ))}
+                  <td className="px-6 py-4 text-right">
+                    <div className="text-base font-black text-red-500 italic tabular-nums">
+                      {record.total}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

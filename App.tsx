@@ -18,7 +18,6 @@ const App: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
 
-  // Calculate global stats
   const stats = useMemo<GlobalStats[]>(() => {
     return PLAYERS.map(player => {
       const playerResults = RESULTS.filter(r => r.playerId === player.id);
@@ -43,7 +42,6 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // League Summary
   const summary = useMemo<LeagueSummary>(() => {
     const sorted = [...stats].sort((a, b) => b.totalPoints - a.totalPoints);
     const leader = PLAYERS.find(p => p.id === sorted[0]?.playerId);
@@ -67,7 +65,6 @@ const App: React.FC = () => {
     };
   }, [stats]);
 
-  // Chart data
   const chartData = useMemo<ChartDataPoint[]>(() => {
     const playedRaces = [...RACES]
       .filter(r => r.status === RaceStatus.PLAYED)
@@ -107,7 +104,6 @@ const App: React.FC = () => {
     <Layout>
       <SummaryCards summary={summary} />
 
-      {/* Navegación Principal */}
       <div className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0 mb-10">
         <div className="flex items-center p-1.5 bg-slate-900/60 border border-white/5 rounded-2xl backdrop-blur-md">
           <button
@@ -145,50 +141,48 @@ const App: React.FC = () => {
             <div className="order-1 lg:order-2 flex flex-col gap-6">
               <GeneralTable players={PLAYERS} stats={stats} />
               
-              {/* BLOQUE DE IA ESPECIALIZADA */}
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
                 <button 
                   onClick={() => setActiveAI('pcs')}
-                  className="group relative flex items-center gap-4 p-4 bg-slate-900 border border-blue-500/20 rounded-2xl hover:border-blue-500 transition-all shadow-xl overflow-hidden"
+                  className="flex items-center gap-4 p-4 bg-slate-900 border border-blue-500/30 rounded-2xl hover:bg-slate-800 transition-all shadow-xl active:scale-[0.98]"
                 >
-                  <div className="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors" />
-                  <div className="p-3 bg-blue-600 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="p-3 bg-blue-600 rounded-xl text-white shadow-blue-500/20 shadow-lg">
                     <Search className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <span className="block text-[10px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Análisis Real</span>
-                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">IA de Procyclingstats</span>
+                    <span className="block text-[9px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Live Stats</span>
+                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">IA Procyclingstats</span>
                   </div>
                 </button>
 
                 <button 
                   onClick={() => setActiveAI('encyclopedia')}
-                  className="group relative flex items-center gap-4 p-4 bg-slate-900 border border-amber-500/20 rounded-2xl hover:border-amber-500 transition-all shadow-xl overflow-hidden"
+                  className="flex items-center gap-4 p-4 bg-slate-900 border border-amber-500/30 rounded-2xl hover:bg-slate-800 transition-all shadow-xl active:scale-[0.98]"
                 >
-                  <div className="absolute inset-0 bg-amber-600/5 group-hover:bg-amber-600/10 transition-colors" />
-                  <div className="p-3 bg-amber-600 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="p-3 bg-amber-600 rounded-xl text-white shadow-amber-500/20 shadow-lg">
                     <BookOpen className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <span className="block text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1">Cultura & Historia</span>
-                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">Enciclopedia del Ciclismo</span>
+                    <span className="block text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none mb-1">Cultura Ciclista</span>
+                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">Enciclopedia IA</span>
                   </div>
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ASISTENTE AI OVERLAY */}
           {activeAI && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
-              <div className="relative w-full max-w-4xl max-h-[90vh]">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950 md:bg-slate-950/90 md:p-6 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full h-full md:max-w-4xl md:h-auto md:max-h-[85vh] flex flex-col">
                 <button 
                   onClick={() => setActiveAI(null)}
-                  className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+                  className="absolute top-4 right-4 z-[110] p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <CyclingAI mode={activeAI} />
+                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
+                  <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
+                </div>
               </div>
             </div>
           )}
@@ -227,7 +221,6 @@ const App: React.FC = () => {
                 </p>
               </div>
           </div>
-
           <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>
       )}

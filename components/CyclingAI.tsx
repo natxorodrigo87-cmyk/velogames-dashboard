@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Globe, BookOpen, Loader2, X, MessageSquare, Info } from 'lucide-react';
+import { Send, Globe, BookOpen, Loader2, X, AlertCircle, RefreshCw, Info } from 'lucide-react';
 
 interface CyclingAIProps {
   mode: 'pcs' | 'encyclopedia';
@@ -22,70 +22,91 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Mensaje de bienvenida automático
   useEffect(() => {
     const welcome = mode === 'pcs' 
-      ? '🎙️ **Radio Tour Informa:** Conectado a Procyclingstats. Pregúntame sobre cualquier corredor, equipo o resultado en tiempo real.'
-      : '📚 **Enciclopedia Frikis:** Historias, mitos y leyendas del ciclismo. ¿De qué hazaña quieres hablar hoy?';
+      ? '🎙️ **Radio Tour:** "¡Atención! Conexión establecida con la base de datos de Procyclingstats. Pregúntame lo que necesites sobre la actualidad del pelotón."'
+      : '📚 **Archivo Histórico:** "Bienvenido al archivo de la Liga Frikis. ¿Sobre qué leyenda o hazaña del pasado quieres investigar?"';
     
     setMessages([{ role: 'bot', text: welcome }]);
-    setTimeout(() => inputRef.current?.focus(), 500);
   }, [mode]);
 
-  // Scroll automático al final
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, loading]);
 
+  const openKeySelector = async () => {
+    // @ts-ignore
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      // @ts-ignore
+      await window.aistudio.openSelectKey();
+      setMessages(prev => [...prev, { role: 'bot', text: "🔄 Conexión reiniciada. Intenta enviar tu mensaje de nuevo." }]);
+    } else {
+      alert("No se pudo abrir el selector de llaves. Por favor, recarga la página.");
+    }
+  };
+
   const handleSend = async () => {
     const userText = input.trim();
     if (!userText || loading) return;
+
+    const currentApiKey = process.env.API_KEY;
+    
+    if (!currentApiKey) {
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: "⚠️ No se detecta ninguna API Key activa. Por favor, pulsa el botón de abajo para vincular tu cuenta de Google.", 
+        isError: true 
+      }]);
+      return;
+    }
 
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setLoading(true);
 
     try {
-      // Usamos la API Key inyectada directamente
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const ai = new GoogleGenAI({ apiKey: currentApiKey });
+      const model = 'gemini-3-flash-preview';
       
-      const config: any = {
-        // Usamos Flash para evitar el diálogo de selección de cuenta
-        model: 'gemini-3-flash-preview',
-        systemInstruction: mode === 'pcs' 
-          ? 'Eres el experto en datos de Radio Tour. Responde con datos reales de ciclismo actual. Sé conciso y usa un tono de retransmisión deportiva.' 
-          : 'Eres un historiador apasionado del ciclismo. Cuenta anécdotas épicas y datos curiosos. Tono romántico y culto.',
-      };
-
-      // Añadimos búsqueda solo si estamos en modo PCS
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: model,
         contents: userText,
         config: {
-          ...config,
+          systemInstruction: mode === 'pcs' 
+            ? 'Eres el coche de Radio Tour. Das datos técnicos, precisos y breves del ciclismo actual. Si usas búsqueda, cita fuentes.' 
+            : 'Eres el cronista oficial de la historia del ciclismo. Tono épico y detallado.',
           tools: mode === 'pcs' ? [{ googleSearch: {} }] : undefined,
         },
       });
 
-      const botText = response.text || "Lo siento, hay interferencias en la señal de Radio Tour...";
+      const botText = response.text || "La señal es débil... no he recibido respuesta clara.";
       const sources: { uri: string; title: string }[] = [];
-      
-      // Extraer fuentes de búsqueda si existen
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      
       if (chunks) {
         chunks.forEach((c: any) => {
-          if (c.web?.uri) sources.push({ uri: c.web.uri, title: c.web.title || 'Ver fuente' });
+          if (c.web?.uri) sources.push({ uri: c.web.uri, title: c.web.title || 'Fuente' });
         });
       }
 
       setMessages(prev => [...prev, { role: 'bot', text: botText, sources }]);
     } catch (error: any) {
-      console.error("Error IA:", error);
+      console.error("Gemini Error:", error);
+      
+      let errorDetail = error.message || "Error desconocido de red";
+      let friendlyMessage = "⚠️ Ha ocurrido un error técnico.";
+
+      if (errorDetail.includes("API_KEY_INVALID") || errorDetail.includes("403") || errorDetail.includes("entity was not found")) {
+        friendlyMessage = "❌ Error de Autorización: Tu API Key no tiene permisos o no está bien vinculada.";
+      } else if (errorDetail.includes("billing")) {
+        friendlyMessage = "❌ Error de Facturación: La cuenta vinculada necesita tener un método de pago activo.";
+      }
+
       setMessages(prev => [...prev, { 
         role: 'bot', 
-        text: "⚠️ No he podido conectar con la base de datos. Por favor, asegúrate de que el sistema tiene acceso a internet.", 
+        text: `${friendlyMessage}\n\nDetalle técnico: ${errorDetail}`, 
         isError: true 
       }]);
     } finally {
@@ -95,55 +116,57 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-slate-950 text-white overflow-hidden md:rounded-3xl border border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+    <div className="flex flex-col w-full h-full bg-slate-950 text-white overflow-hidden md:rounded-3xl border border-white/10 shadow-2xl">
       
-      {/* HEADER DINÁMICO */}
+      {/* HEADER */}
       <div className={`shrink-0 p-4 border-b border-white/10 flex items-center justify-between ${mode === 'pcs' ? 'bg-blue-600/10' : 'bg-amber-600/10'}`}>
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl ${mode === 'pcs' ? 'bg-blue-600 text-white' : 'bg-amber-600 text-white'}`}>
+          <div className={`p-2 rounded-xl ${mode === 'pcs' ? 'bg-blue-600' : 'bg-amber-600'}`}>
             {mode === 'pcs' ? <Globe className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
           </div>
           <div>
-            <h2 className="text-xs font-black uppercase tracking-widest">{mode === 'pcs' ? 'Radio Tour Live' : 'Enciclopedia'}</h2>
-            <p className="text-[10px] text-slate-500 font-bold uppercase">Sincronizado vía Satélite</p>
+            <h2 className="text-xs font-black uppercase tracking-widest">{mode === 'pcs' ? 'Radio Tour' : 'Enciclopedia'}</h2>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[8px] text-slate-400 font-bold uppercase">Sistema Online</span>
+            </div>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-colors">
+        <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-lg text-slate-500">
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* CHAT CONTAINER */}
-      <div 
-        ref={scrollRef} 
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/50 to-slate-950"
-      >
+      {/* CHAT */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${
               m.role === 'user' 
-                ? 'bg-blue-600 text-white font-semibold' 
+                ? 'bg-blue-600 text-white shadow-lg' 
                 : m.isError 
-                  ? 'bg-red-900/30 border border-red-500/30 text-red-200' 
-                  : 'bg-slate-900 border border-white/10 text-slate-200'
+                  ? 'bg-red-950/40 border border-red-500/30 text-red-200 shadow-lg' 
+                  : 'bg-slate-900 border border-white/5 text-slate-200'
             }`}>
               <div className="whitespace-pre-wrap leading-relaxed">{m.text}</div>
               
               {m.sources && m.sources.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2 pt-3 border-t border-white/5">
                   {m.sources.map((s, idx) => (
-                    <a 
-                      key={idx} 
-                      href={s.uri} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2 py-1 bg-white/5 hover:bg-white/10 rounded text-[9px] font-bold text-blue-400 border border-blue-400/20 transition-colors"
-                    >
-                      <Info className="w-3 h-3" />
-                      {s.title}
+                    <a key={idx} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 hover:bg-blue-500/20 rounded text-[9px] font-bold text-blue-400 border border-blue-400/20">
+                      <Info className="w-3 h-3" /> {s.title}
                     </a>
                   ))}
                 </div>
+              )}
+
+              {m.isError && (
+                <button 
+                  onClick={openKeySelector}
+                  className="mt-4 w-full py-3 bg-white text-black rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-colors"
+                >
+                  <RefreshCw className="w-3 h-3" /> Reconfigurar Conexión
+                </button>
               )}
             </div>
           </div>
@@ -152,14 +175,14 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
           <div className="flex justify-start">
             <div className="bg-slate-900 border border-white/5 p-4 rounded-2xl flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 italic">Consultando datos...</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 italic">Sincronizando...</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* INPUT AREA */}
-      <div className="p-4 bg-slate-950/80 backdrop-blur-md border-t border-white/10">
+      {/* INPUT */}
+      <div className="p-4 bg-slate-950 border-t border-white/10 pb-10 md:pb-6">
         <div className="flex gap-2 max-w-3xl mx-auto">
           <input 
             ref={inputRef}
@@ -167,24 +190,17 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={mode === 'pcs' ? "Pregunta sobre un ciclista..." : "Hablemos de historia del ciclismo..."}
-            className="flex-1 bg-slate-900 border border-white/10 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-blue-500 transition-all text-white placeholder:text-slate-600 shadow-inner"
+            placeholder="Escribe tu consulta aquí..."
+            className="flex-1 bg-slate-900 border border-white/10 rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-blue-500 text-white"
           />
           <button 
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className={`p-3 rounded-xl transition-all shadow-lg ${
-              input.trim() 
-                ? 'bg-blue-600 text-white hover:bg-blue-500 active:scale-90' 
-                : 'bg-slate-800 text-slate-500'
-            }`}
+            className="p-3 bg-blue-600 text-white rounded-xl disabled:opacity-20 hover:bg-blue-500"
           >
             <Send className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-center text-[8px] text-slate-600 mt-3 font-bold uppercase tracking-[0.2em]">
-          Powered by Gemini AI • Liga Frikis Intelligence System
-        </p>
       </div>
     </div>
   );

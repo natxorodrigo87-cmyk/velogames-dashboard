@@ -35,10 +35,12 @@ const CyclingAI: React.FC = () => {
     setLoading(true);
 
     try {
+      // Inicializamos el cliente justo antes de la llamada para asegurar que usa la clave más reciente
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: userText,
+        model: 'gemini-3-pro-preview',
+        contents: { parts: [{ text: userText }] },
         config: {
           tools: [{ googleSearch: {} }],
           systemInstruction: `Eres el "Oráculo Pro de la Liga Frikis", una enciclopedia andante y analista de élite del ciclismo mundial.
@@ -72,9 +74,15 @@ REGLAS CRÍTICAS:
       }
 
       setMessages(prev => [...prev, { role: 'bot', text: botResponse, sources }]);
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [...prev, { role: 'bot', text: "¡Error de conexión! El pelotón se ha cortado en un túnel. Inténtalo de nuevo." }]);
+    } catch (error: any) {
+      console.error("AI Error:", error);
+      let errorMessage = "¡Error de conexión! El pelotón se ha cortado en un túnel. Inténtalo de nuevo.";
+      
+      if (error?.message?.includes("API_KEY") || !process.env.API_KEY) {
+        errorMessage = "Error de configuración: No se ha detectado la API KEY correctamente.";
+      }
+
+      setMessages(prev => [...prev, { role: 'bot', text: errorMessage }]);
     } finally {
       setLoading(false);
     }
@@ -99,7 +107,7 @@ REGLAS CRÍTICAS:
         <div className="hidden sm:block">
            <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 flex items-center gap-2">
              <Sparkles className="w-3 h-3 text-purple-400" />
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Powered by Gemini 3</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Powered by Gemini 3 Pro</span>
            </div>
         </div>
       </div>

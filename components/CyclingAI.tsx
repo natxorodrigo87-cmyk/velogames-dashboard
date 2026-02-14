@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Globe, BookOpen, Database, Loader2, RefreshCw, Key, AlertCircle } from 'lucide-react';
+import { Send, Globe, BookOpen, Database, Loader2, RefreshCw, Key, ShieldAlert } from 'lucide-react';
 
 interface CyclingAIProps {
   mode: 'pcs' | 'encyclopedia';
@@ -25,8 +25,8 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
 
   useEffect(() => {
     const welcome = mode === 'pcs' 
-      ? '¡Radio Tour 2026 listo! Pregúntame sobre cualquier carrera o corredor actual.'
-      : 'Has entrado en la Biblioteca Frikis. ¿Qué hito histórico del ciclismo quieres consultar?';
+      ? '¡Radio Tour online! Usando datos de Google Search para la temporada 2026.'
+      : 'Has accedido a los archivos históricos. ¿Qué leyenda del ciclismo quieres consultar?';
     setMessages([{ role: 'bot', text: welcome }]);
   }, [mode]);
 
@@ -41,7 +41,6 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
     if (window.aistudio) {
       // @ts-ignore
       await window.aistudio.openSelectKey();
-      // Si hay un error previo, intentamos limpiar y reintentar
       setStatus('Reconectando...');
     }
   };
@@ -56,29 +55,39 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
     }
     
     setLoading(true);
-    setStatus('Conectando con Radio Tour...');
+    setStatus('Sintonizando Radio Tour...');
 
     try {
-      // REGLA SDK: Instanciar justo antes de la llamada
+      // SIEMPRE crear instancia nueva para asegurar el API_KEY más reciente
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
-      
-      const systemInstruction = mode === 'pcs'
-        ? 'Eres el analista técnico de la Liga Frikis. Usa Google Search para extraer datos de procyclingstats.com. Responde con datos reales de la temporada 2026.'
-        : 'Eres el historiador de la Liga Frikis. Responde con épica y pasión sobre ciclismo clásico y leyendas.';
-
-      // gemini-3-flash-preview es el modelo más estable y con mayor disponibilidad
       const modelName = 'gemini-3-flash-preview';
 
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: userText,
-        config: {
-          systemInstruction,
-          tools: mode === 'pcs' ? [{ googleSearch: {} }] : undefined,
-        },
-      });
+      const systemInstruction = mode === 'pcs'
+        ? 'Eres el analista técnico de la Liga Frikis. Usa Google Search para extraer resultados actuales de procyclingstats.com.'
+        : 'Eres el historiador de la Liga Frikis. Responde sobre ciclismo clásico con sabiduría.';
 
-      const botText = response.text || "La señal de Radio Tour es muy débil ahora mismo.";
+      let response;
+      try {
+        // Intento 1: Con herramientas (Google Search)
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: userText,
+          config: {
+            systemInstruction,
+            tools: mode === 'pcs' ? [{ googleSearch: {} }] : undefined,
+          },
+        });
+      } catch (toolError: any) {
+        // Fallback: Si el error es por herramientas o cuota, reintentar sin herramientas
+        console.warn("Tool call failed, trying offline mode...", toolError);
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: userText,
+          config: { systemInstruction },
+        });
+      }
+
+      const botText = response.text || "La señal es débil, intenta preguntar de nuevo.";
       const sources: { uri: string; title: string }[] = [];
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
       
@@ -96,24 +105,30 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
       ]);
 
     } catch (error: any) {
-      console.error("AI Error:", error);
+      console.error("AI CRITICAL ERROR:", error);
       const errorStr = error.toString().toLowerCase();
       
-      // Si es un error de entidad no encontrada o clave, disparamos el selector
-      if (errorStr.includes("not found") || errorStr.includes("404") || errorStr.includes("401")) {
-        // Disparar automáticamente el selector de clave si es posible
+      // Captura agresiva de errores de clave/autorización
+      const isKeyError = 
+        errorStr.includes("not found") || 
+        errorStr.includes("404") || 
+        errorStr.includes("401") || 
+        errorStr.includes("key") || 
+        errorStr.includes("permission") ||
+        errorStr.includes("forbidden");
+
+      if (isKeyError) {
         handleOpenKey();
-        
         setMessages(prev => [...prev, { 
           role: 'bot', 
-          text: "¡SIN CONEXIÓN SEGURA! He activado el selector de llaves de Google Cloud. Por favor, selecciona una clave activa de un proyecto con facturación habilitada.", 
+          text: "¡ERROR DE CLAVE! No tienes una conexión segura activa con Google Cloud. He abierto el selector de llaves. Por favor, selecciona una llave válida.", 
           isError: true,
           needsKey: true
         }]);
       } else {
         setMessages(prev => [...prev, { 
           role: 'bot', 
-          text: "¡Avería mecánica! No he podido procesar tu mensaje. Comprueba tu conexión e inténtalo de nuevo.", 
+          text: "¡PÁJARA DEL SERVIDOR! Error de red o cuota excedida. Por favor, reintenta en unos segundos.", 
           isError: true 
         }]);
       }

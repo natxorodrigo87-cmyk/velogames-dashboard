@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from './components/Layout.tsx';
 import GeneralTable from './components/GeneralTable.tsx';
 import EvolutionChart from './components/EvolutionChart.tsx';
@@ -11,36 +11,12 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, Search, BookOpen, X, Key, AlertCircle } from 'lucide-react';
+import { LayoutDashboard, Flame, Search, BookOpen, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
-  const [hasKey, setHasKey] = useState<boolean>(true);
-
-  // Verificación de la clave
-  useEffect(() => {
-    const checkKey = async () => {
-      // @ts-ignore
-      if (window.aistudio) {
-        // @ts-ignore
-        const selected = await window.aistudio.hasSelectedApiKey();
-        setHasKey(selected);
-      }
-    };
-    checkKey();
-  }, [activeAI]);
-
-  const handleOpenKey = async () => {
-    // @ts-ignore
-    if (window.aistudio) {
-      // @ts-ignore
-      await window.aistudio.openSelectKey();
-      // REGLA SDK: Asumir éxito inmediatamente después de abrir el selector para evitar bloqueos
-      setHasKey(true);
-    }
-  };
 
   const stats = useMemo<GlobalStats[]>(() => {
     return PLAYERS.map(player => {
@@ -204,29 +180,9 @@ const App: React.FC = () => {
                 >
                   <X className="w-6 h-6" />
                 </button>
-                
-                {!hasKey ? (
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-900 md:rounded-3xl border border-white/10">
-                    <div className="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center mb-6 border border-blue-500/30">
-                      <Key className="w-10 h-10 text-blue-500" />
-                    </div>
-                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Radio Tour Offline</h2>
-                    <p className="text-slate-400 text-sm mb-8 max-w-sm leading-relaxed">
-                      Para conectar con el Radio Tour, selecciona tu llave de acceso pagada de Google Cloud.
-                    </p>
-                    <button 
-                      onClick={handleOpenKey}
-                      className="w-full max-w-xs py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-3"
-                    >
-                      <Key className="w-5 h-5" /> Iniciar Conexión
-                    </button>
-                    <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="mt-6 text-[10px] text-slate-500 uppercase hover:underline">Info sobre facturación de Google</a>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
-                    <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
-                  </div>
-                )}
+                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
+                  <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
+                </div>
               </div>
             </div>
           )}

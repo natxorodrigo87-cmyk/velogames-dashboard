@@ -9,37 +9,17 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --slate-950: #020617;
-    }
+    :root { --slate-950: #020617; }
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--slate-950);
       color: white;
       margin: 0;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
-    h1, h2, h3, .font-heading {
-      font-family: 'Outfit', sans-serif;
-    }
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0f172a;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
-    }
-    /* Estado de carga */
+    h1, h2, h3, .font-heading { font-family: 'Outfit', sans-serif; }
     #root:empty::before {
-      content: 'CARGANDO DASHBOARD...';
+      content: 'INICIANDO SISTEMA...';
       position: absolute;
       top: 50%;
       left: 50%;
@@ -62,10 +42,10 @@
     "lucide-react": "https://esm.sh/lucide-react@0.463.0?external=react",
     "recharts": "https://esm.sh/recharts@2.13.3?external=react,react-dom",
     "@google/genai": "https://esm.sh/@google/genai@1.41.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "vite": "https://esm.sh/vite@^7.3.1"
   }
 }
 </script>

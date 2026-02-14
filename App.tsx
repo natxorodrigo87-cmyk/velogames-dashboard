@@ -176,11 +176,11 @@ const App: React.FC = () => {
               <div className="relative w-full h-full md:max-w-4xl md:h-auto md:max-h-[85vh] flex flex-col">
                 <button 
                   onClick={() => setActiveAI(null)}
-                  className="absolute top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md shadow-2xl"
+                  className="absolute top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md shadow-2xl transition-transform active:scale-90"
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
+                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl bg-slate-950">
                   <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
                 </div>
               </div>

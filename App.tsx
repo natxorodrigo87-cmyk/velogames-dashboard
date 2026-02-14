@@ -11,7 +11,7 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, Search, BookOpen, X, Key } from 'lucide-react';
+import { LayoutDashboard, Flame, Search, BookOpen, X, Key, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
@@ -19,17 +19,17 @@ const App: React.FC = () => {
   const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
   const [hasKey, setHasKey] = useState<boolean>(true);
 
-  // Check key on mount and when AI is opened
+  // Check key availability on every AI open to prevent stale connections
   useEffect(() => {
     const checkKey = async () => {
-      // @ts-ignore - aistudio is pre-configured and injected by the environment
+      // @ts-ignore
       if (window.aistudio) {
         // @ts-ignore
         const selected = await window.aistudio.hasSelectedApiKey();
         setHasKey(selected);
       }
     };
-    checkKey();
+    if (activeAI) checkKey();
   }, [activeAI]);
 
   const handleOpenKey = async () => {
@@ -37,6 +37,7 @@ const App: React.FC = () => {
     if (window.aistudio) {
       // @ts-ignore
       await window.aistudio.openSelectKey();
+      // Assume success as per SDK rules to avoid race conditions
       setHasKey(true);
     }
   };
@@ -209,17 +210,21 @@ const App: React.FC = () => {
                     <div className="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center mb-6 border border-blue-500/30">
                       <Key className="w-10 h-10 text-blue-500" />
                     </div>
-                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Configuración Requerida</h2>
+                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Conexión Segura</h2>
                     <p className="text-slate-400 text-sm mb-8 max-w-sm leading-relaxed">
-                      Para usar la IA avanzada de la liga en tu móvil, primero debes configurar una conexión segura.
+                      Para usar la IA avanzada en tu móvil, selecciona tu llave de acceso pagada de Google Cloud.
                     </p>
                     <button 
                       onClick={handleOpenKey}
-                      className="w-full max-w-xs py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all"
+                      className="w-full max-w-xs py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-3"
                     >
-                      Activar Conexión IA
+                      <Key className="w-5 h-5" /> Configurar Clave
                     </button>
-                    <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="mt-6 text-[10px] text-slate-600 uppercase font-bold hover:text-slate-400">Ver documentación de facturación</a>
+                    <div className="mt-8 flex items-center gap-2 text-amber-500 bg-amber-500/10 px-4 py-2 rounded-lg border border-amber-500/20">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Requiere Google Cloud Billing</span>
+                    </div>
+                    <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="mt-4 text-[10px] text-slate-600 uppercase font-bold hover:text-slate-400">Ver documentación de pago</a>
                   </div>
                 ) : (
                   <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">

@@ -11,12 +11,12 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, Search, BookOpen, X } from 'lucide-react';
+import { LayoutDashboard, Flame, Search, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const stats = useMemo<GlobalStats[]>(() => {
     return PLAYERS.map(player => {
@@ -141,47 +141,34 @@ const App: React.FC = () => {
             <div className="order-1 lg:order-2 flex flex-col gap-6">
               <GeneralTable players={PLAYERS} stats={stats} />
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                <button 
-                  onClick={() => setActiveAI('pcs')}
-                  className="flex items-center gap-4 p-4 bg-slate-900 border border-blue-500/30 rounded-2xl hover:bg-slate-800 transition-all shadow-xl active:scale-[0.98]"
-                >
-                  <div className="p-3 bg-blue-600 rounded-xl text-white shadow-blue-500/20 shadow-lg">
-                    <Search className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <span className="block text-[9px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Live Stats</span>
-                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">IA Procyclingstats</span>
-                  </div>
-                </button>
-
-                <button 
-                  onClick={() => setActiveAI('encyclopedia')}
-                  className="flex items-center gap-4 p-4 bg-slate-900 border border-amber-500/30 rounded-2xl hover:bg-slate-800 transition-all shadow-xl active:scale-[0.98]"
-                >
-                  <div className="p-3 bg-amber-600 rounded-xl text-white shadow-amber-500/20 shadow-lg">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <span className="block text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none mb-1">Cultura Ciclista</span>
-                    <span className="block text-sm font-black text-white italic uppercase tracking-tighter">Enciclopedia IA</span>
-                  </div>
-                </button>
-              </div>
+              {/* ÚNICO BOTÓN DE CHAT: DIRECTO A PCS */}
+              <button 
+                onClick={() => setIsAIChatOpen(true)}
+                className="group relative flex items-center gap-4 p-5 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl hover:scale-[1.02] transition-all shadow-2xl active:scale-[0.98] overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/10 group-hover:bg-transparent transition-colors"></div>
+                <div className="p-3 bg-white/20 rounded-xl text-white backdrop-blur-md">
+                  <Search className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <span className="block text-[10px] font-black text-blue-100 uppercase tracking-widest leading-none mb-1">Coche Radio Tour</span>
+                  <span className="block text-base font-black text-white italic uppercase tracking-tighter">Consultar Procyclingstats</span>
+                </div>
+              </button>
             </div>
           </div>
 
-          {activeAI && (
-            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950 md:bg-slate-950/90 md:p-6 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
-              <div className="relative w-full h-full md:max-w-4xl md:h-auto md:max-h-[85vh] flex flex-col">
+          {isAIChatOpen && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/95 md:p-6 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-full h-full md:max-w-3xl md:h-[80vh] flex flex-col">
                 <button 
-                  onClick={() => setActiveAI(null)}
-                  className="absolute top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md shadow-2xl transition-transform active:scale-90"
+                  onClick={() => setIsAIChatOpen(false)}
+                  className="absolute top-4 right-4 z-[210] p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
-                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl bg-slate-950">
-                  <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
+                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl bg-slate-950 border border-white/10">
+                  <CyclingAI onClose={() => setIsAIChatOpen(false)} />
                 </div>
               </div>
             </div>

@@ -11,7 +11,7 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, BrainCircuit } from 'lucide-react';
+import { LayoutDashboard, Flame, BrainCircuit, ArrowRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'mortadela' | 'ai'>('general');
@@ -106,40 +106,60 @@ const App: React.FC = () => {
     <Layout>
       <SummaryCards summary={summary} />
 
-      {/* Selector de Pestañas */}
-      <div className="flex items-center p-1.5 bg-slate-900/60 border border-white/5 rounded-2xl w-fit mx-auto md:mx-0 mb-8 backdrop-blur-md">
-        <button
-          onClick={() => setActiveTab('general')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            activeTab === 'general' 
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-              : 'text-slate-500 hover:text-slate-300'
-          }`}
-        >
-          <LayoutDashboard className="w-4 h-4" />
-          Clasificación
-        </button>
-        <button
-          onClick={() => setActiveTab('mortadela')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-            activeTab === 'mortadela' 
-              ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' 
-              : 'text-slate-500 hover:text-slate-300'
-          }`}
-        >
-          <Flame className="w-4 h-4" />
-          Records y Bajas
-        </button>
-        <button
+      {/* Navegación Principal */}
+      <div className="flex flex-col gap-4 max-w-md mx-auto md:mx-0 mb-10">
+        {/* Selector de Pestañas (Solo 2 botones ahora) */}
+        <div className="flex items-center p-1.5 bg-slate-900/60 border border-white/5 rounded-2xl backdrop-blur-md">
+          <button
+            onClick={() => setActiveTab('general')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+              activeTab === 'general' 
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Clasificación
+          </button>
+          <button
+            onClick={() => setActiveTab('mortadela')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
+              activeTab === 'mortadela' 
+                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5" />
+            Records
+          </button>
+        </div>
+
+        {/* Botón "Entrenador Personal" debajo de los otros botones */}
+        <button 
           onClick={() => setActiveTab('ai')}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+          className={`w-full relative group overflow-hidden p-4 rounded-2xl shadow-xl border transition-all active:scale-95 ${
             activeTab === 'ai' 
-              ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
-              : 'text-slate-500 hover:text-slate-300'
+              ? 'bg-purple-600 border-purple-400/50 shadow-purple-900/40' 
+              : 'bg-gradient-to-r from-purple-900/40 to-slate-900/60 border-white/5 hover:border-purple-500/30'
           }`}
         >
-          <BrainCircuit className="w-4 h-4" />
-          IA Advisor
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.15)_0%,_transparent_100%)]"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-4">
+              <div className={`p-2 rounded-xl backdrop-blur-md ${activeTab === 'ai' ? 'bg-white/20' : 'bg-purple-600/20 text-purple-400'}`}>
+                <BrainCircuit className={`w-5 h-5 ${activeTab === 'ai' ? 'text-white' : 'text-purple-400'}`} />
+              </div>
+              <div className="text-left">
+                <span className={`block text-[8px] font-black uppercase tracking-widest leading-none mb-1 ${activeTab === 'ai' ? 'text-purple-200' : 'text-purple-500'}`}>
+                  PCS Live Advisor
+                </span>
+                <span className="block text-sm font-black text-white uppercase italic tracking-tighter leading-none">
+                  Entrenador Personal
+                </span>
+              </div>
+            </div>
+            <ArrowRight className={`w-4 h-4 transition-transform ${activeTab === 'ai' ? 'text-white translate-x-1' : 'text-slate-600 group-hover:text-purple-400'}`} />
+          </div>
         </button>
       </div>
 
@@ -149,6 +169,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-2 order-2 lg:order-1">
               <EvolutionChart data={chartData} players={PLAYERS} />
             </div>
+            
             <div className="order-1 lg:order-2">
               <GeneralTable players={PLAYERS} stats={stats} />
             </div>

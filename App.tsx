@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Layout from './components/Layout.tsx';
 import GeneralTable from './components/GeneralTable.tsx';
 import EvolutionChart from './components/EvolutionChart.tsx';
@@ -11,12 +11,35 @@ import AbandonosTable from './components/AbandonosTable.tsx';
 import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame, Search, BookOpen, X } from 'lucide-react';
+import { LayoutDashboard, Flame, Search, BookOpen, X, Key } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
+  const [hasKey, setHasKey] = useState<boolean>(true);
+
+  // Check key on mount and when AI is opened
+  useEffect(() => {
+    const checkKey = async () => {
+      // @ts-ignore - aistudio is pre-configured and injected by the environment
+      if (window.aistudio) {
+        // @ts-ignore
+        const selected = await window.aistudio.hasSelectedApiKey();
+        setHasKey(selected);
+      }
+    };
+    checkKey();
+  }, [activeAI]);
+
+  const handleOpenKey = async () => {
+    // @ts-ignore
+    if (window.aistudio) {
+      // @ts-ignore
+      await window.aistudio.openSelectKey();
+      setHasKey(true);
+    }
+  };
 
   const stats = useMemo<GlobalStats[]>(() => {
     return PLAYERS.map(player => {
@@ -172,17 +195,37 @@ const App: React.FC = () => {
           </div>
 
           {activeAI && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950 md:bg-slate-950/90 md:p-6 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950 md:bg-slate-950/90 md:p-6 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
               <div className="relative w-full h-full md:max-w-4xl md:h-auto md:max-h-[85vh] flex flex-col">
                 <button 
                   onClick={() => setActiveAI(null)}
-                  className="absolute top-4 right-4 z-[110] p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md"
+                  className="absolute top-4 right-4 z-[210] p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md shadow-2xl"
                 >
                   <X className="w-6 h-6" />
                 </button>
-                <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
-                  <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
-                </div>
+                
+                {!hasKey ? (
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-900 md:rounded-3xl border border-white/10">
+                    <div className="w-20 h-20 bg-blue-600/20 rounded-3xl flex items-center justify-center mb-6 border border-blue-500/30">
+                      <Key className="w-10 h-10 text-blue-500" />
+                    </div>
+                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Configuración Requerida</h2>
+                    <p className="text-slate-400 text-sm mb-8 max-w-sm leading-relaxed">
+                      Para usar la IA avanzada de la liga en tu móvil, primero debes configurar una conexión segura.
+                    </p>
+                    <button 
+                      onClick={handleOpenKey}
+                      className="w-full max-w-xs py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 active:scale-95 transition-all"
+                    >
+                      Activar Conexión IA
+                    </button>
+                    <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="mt-6 text-[10px] text-slate-600 uppercase font-bold hover:text-slate-400">Ver documentación de facturación</a>
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">
+                    <CyclingAI mode={activeAI} onClose={() => setActiveAI(null)} />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -212,14 +255,6 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="max-w-4xl mx-auto">
              <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
-             <div className="mt-12 p-8 bg-amber-500/5 border border-amber-500/10 rounded-3xl text-center">
-                <h3 className="text-xl font-black text-amber-500 uppercase italic tracking-tighter mb-2">¿Qué es una Mortadela?</h3>
-                <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mx-auto italic">
-                  "Dícese de aquel rendimiento ciclista individual que rompe todos los esquemas, 
-                  consiguiendo una puntuación desorbitada en una sola carrera. Un hito de fuerza bruta 
-                  y mortadela que solo los elegidos pueden alcanzar."
-                </p>
-              </div>
           </div>
           <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>

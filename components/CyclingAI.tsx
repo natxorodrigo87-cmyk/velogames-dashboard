@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Search, Database, BookOpen, Sparkles, Loader2, RefreshCw, Globe } from 'lucide-react';
+import { Send, Globe, BookOpen, Database, Sparkles, Loader2, RefreshCw, AlertTriangle, Key } from 'lucide-react';
 
 interface CyclingAIProps {
   mode: 'pcs' | 'encyclopedia';
@@ -24,8 +24,8 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
 
   useEffect(() => {
     const welcome = mode === 'pcs' 
-      ? '¡Radio Tour activado! Consultando datos reales de la temporada 2026. ¿Qué quieres saber de la carrera de hoy?'
-      : 'Has abierto los archivos históricos de la Liga. Pregúntame sobre cualquier leyenda, táctica o récord del pasado.';
+      ? '¡Radio Tour 2026 online! Estoy conectado a Procyclingstats para darte datos en tiempo real.'
+      : 'Has accedido a la Biblioteca de la Liga Frikis. ¿Qué hito histórico quieres rememorar hoy?';
     
     setMessages([{ role: 'bot', text: welcome }]);
   }, [mode]);
@@ -39,7 +39,7 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
     }
   }, [messages, loading]);
 
-  const handleSend = async (manualText?: string) => {
+  const handleSend = async (manualText?: string, forceNoSearch = false) => {
     const userText = manualText || input.trim();
     if (!userText || loading) return;
 
@@ -49,79 +49,70 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
     }
     
     setLoading(true);
-    setStatus(mode === 'pcs' ? 'Rastreando Procyclingstats...' : 'Consultando archivos históricos...');
+    setStatus(forceNoSearch ? 'Modo de seguridad (sin búsqueda)...' : (mode === 'pcs' ? 'Rastreando PCS...' : 'Consultando archivos...'));
 
     try {
-      // Create fresh instance every time for maximum key reliability
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      const apiKey = process.env.API_KEY;
+      if (!apiKey || apiKey === 'undefined') {
+        throw new Error("API_KEY_MISSING");
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
       
       const systemInstruction = mode === 'pcs'
-        ? 'Eres el analista oficial de la Liga Frikis. Usas Procyclingstats para dar resultados actuales. Responde de forma técnica, rápida y veraz.'
-        : 'Eres el historiador de la Liga Frikis. Sabes todo sobre el ciclismo épico desde 1900 hasta hoy. Responde con sabiduría y pasión.';
+        ? 'Eres el asistente técnico de la Liga Frikis. Tu misión es proporcionar datos de Procyclingstats sobre carreras de 2025 y 2026. Sé breve y muy técnico.'
+        : 'Eres el historiador de la Liga Frikis. Sabes todo sobre ciclismo clásico y leyendas del Tour. Responde con estilo épico.';
 
-      // Model selection based on task capability
-      // PCS mode REQUIRES Search grounding, which is only supported in Pro Image Preview
-      const modelName = mode === 'pcs' ? 'gemini-3-pro-image-preview' : 'gemini-3-flash-preview';
+      // Usamos el modelo más equilibrado para texto
+      const modelName = 'gemini-3-flash-preview';
 
-      // Use the simplest possible call structure for mobile compatibility
       const response = await ai.models.generateContent({
         model: modelName,
-        contents: userText, // SDK handles string prompts with maximum stability
+        contents: userText,
         config: {
           systemInstruction: systemInstruction,
-          tools: mode === 'pcs' ? [{ googleSearch: {} }] : undefined,
+          // Si el primer intento con búsqueda falla, el reintento vendrá con forceNoSearch = true
+          tools: (mode === 'pcs' && !forceNoSearch) ? [{ googleSearch: {} }] : undefined,
         },
       });
 
-      const botText = response.text || "La señal es débil en este puerto. Intenta de nuevo.";
-      
-      // Extraction of grounding chunks for website links as per mandatory rules
+      const botText = response.text || "No hay señal de Radio Tour en este puerto.";
       const sources: { uri: string; title: string }[] = [];
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      
       if (chunks) {
         chunks.forEach((c: any) => {
           if (c.web?.uri) {
-            sources.push({ uri: c.web.uri, title: c.web.title || 'Referencia' });
+            sources.push({ uri: c.web.uri, title: c.web.title || 'Referencia PCS' });
           }
         });
       }
 
       setMessages(prev => [
         ...prev.filter(m => !m.isError), 
-        { 
-          role: 'bot', 
-          text: botText, 
-          sources: sources.length > 0 ? sources : undefined 
-        }
+        { role: 'bot', text: botText, sources: sources.length > 0 ? sources : undefined }
       ]);
 
     } catch (error: any) {
-      console.error("Gemini SDK Error:", error);
+      console.error("Critical AI Error:", error);
       const errorMsg = error.message || "";
       
-      // Handle the common "entity not found" error by prompting for key re-selection
-      if (errorMsg.includes("Requested entity was not found") || errorMsg.includes("404")) {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            role: 'bot', 
-            text: "¡Error de conexión crítica! La llave de acceso no es válida para este modelo. Por favor, vuelve a configurar la clave.",
-            isError: true 
-          }
-        ]);
-        // @ts-ignore
-        if (window.aistudio) { window.aistudio.openSelectKey(); }
+      if (errorMsg === "API_KEY_MISSING") {
+        setMessages(prev => [...prev, { 
+          role: 'bot', 
+          text: "No se detecta conexión segura. Pulsa el botón para activar tu clave de Google Cloud.", 
+          isError: true 
+        }]);
+      } else if (!forceNoSearch && mode === 'pcs') {
+        // REINTENTO AUTOMÁTICO: A veces fallan las herramientas de búsqueda por cuotas/región
+        handleSend(userText, true);
+        return;
       } else {
-        setMessages(prev => [
-          ...prev, 
-          { 
-            role: 'bot', 
-            text: errorMsg.includes("429") 
-              ? "¡Pájara! He agotado mi límite de mensajes por ahora. Espera unos segundos." 
-              : "¡Caída en el pelotón! Hubo un error de red. Intenta enviar el mensaje de nuevo.",
-            isError: true 
-          }
-        ]);
+        setMessages(prev => [...prev, { 
+          role: 'bot', 
+          text: "¡Caída masiva! La conexión con la IA ha fallado. Revisa tu clave o intenta de nuevo en unos segundos.", 
+          isError: true 
+        }]);
       }
     } finally {
       setLoading(false);
@@ -129,69 +120,79 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
     }
   };
 
+  const handleReauth = () => {
+    // @ts-ignore
+    if (window.aistudio) {
+      // @ts-ignore
+      window.aistudio.openSelectKey();
+    }
+  };
+
   const isPcs = mode === 'pcs';
 
   return (
-    <div className="flex flex-col w-full h-full bg-slate-950 text-white overflow-hidden shadow-2xl">
-      {/* Dynamic Header */}
-      <div className={`shrink-0 p-5 pt-16 md:pt-5 border-b flex items-center justify-between ${isPcs ? 'bg-blue-600' : 'bg-amber-600'}`}>
+    <div className="flex flex-col w-full h-full bg-slate-950 text-white overflow-hidden border-x border-white/5 md:rounded-3xl shadow-2xl">
+      {/* Header */}
+      <div className={`shrink-0 p-5 pt-16 md:pt-5 border-b border-white/10 flex items-center justify-between ${isPcs ? 'bg-blue-600' : 'bg-amber-600'}`}>
         <div className="flex items-center gap-4">
           <div className="p-2.5 bg-white/20 rounded-2xl backdrop-blur-md">
             {isPcs ? <Globe className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
           </div>
           <div>
             <h2 className="text-sm font-black uppercase italic tracking-tighter leading-none">
-              {isPcs ? 'PCS Live Advisor' : 'Enciclopedia Frikis'}
+              {isPcs ? 'Radio Tour Live' : 'Enciclopedia Histórica'}
             </h2>
-            <div className="flex items-center gap-1.5 mt-1.5">
+            <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-white animate-pulse' : 'bg-green-400'}`} />
               <span className="text-[9px] text-white/70 font-black uppercase tracking-widest">
-                {loading ? status : 'Conectado'}
+                {loading ? status : 'Sincronizado'}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Message Feed */}
+      {/* Feed */}
       <div 
         ref={scrollRef} 
-        className="flex-1 overflow-y-auto p-4 space-y-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-fixed"
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] scroll-smooth"
       >
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-3 duration-300`}>
-            <div className={`max-w-[92%] md:max-w-[85%] ${m.role === 'user' ? 'flex flex-col items-end' : ''}`}>
-              <div className={`p-4 rounded-2xl text-[14px] md:text-[15px] leading-relaxed shadow-2xl ${
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
+            <div className={`max-w-[90%] ${m.role === 'user' ? 'flex flex-col items-end' : ''}`}>
+              <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-xl ${
                 m.role === 'user' 
                   ? `${isPcs ? 'bg-blue-600' : 'bg-amber-600'} text-white rounded-tr-none border border-white/10` 
                   : m.isError 
-                    ? 'bg-red-500/10 border border-red-500/30 text-red-200' 
+                    ? 'bg-red-500/20 border border-red-500/30 text-red-200' 
                     : 'bg-slate-900/90 text-slate-200 border border-white/5 rounded-tl-none backdrop-blur-md'
               }`}>
                 {m.text}
                 
                 {m.isError && (
-                  <button 
-                    onClick={() => handleSend(messages[messages.length-2]?.text)}
-                    className="mt-4 flex items-center gap-2 w-full justify-center py-3.5 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" /> Reintentar Envío
-                  </button>
+                  <div className="mt-4 flex flex-col gap-2">
+                    <button 
+                      onClick={handleReauth}
+                      className="flex items-center gap-2 w-full justify-center py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase active:scale-95 transition-all"
+                    >
+                      <Key className="w-3.5 h-3.5" /> Reconfigurar Clave
+                    </button>
+                    <button 
+                      onClick={() => handleSend(messages[messages.length-2]?.text)}
+                      className="flex items-center gap-2 w-full justify-center py-3 bg-slate-800 text-white rounded-xl font-black text-[10px] uppercase active:scale-95 transition-all"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" /> Reintentar
+                    </button>
+                  </div>
                 )}
               </div>
               
-              {/* Mandatory Source Links Display */}
-              {m.sources && m.sources.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {m.sources.slice(0, 4).map((s, idx) => (
-                    <a 
-                      key={idx} 
-                      href={s.uri} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[9px] text-blue-400 font-black flex items-center gap-1.5 bg-blue-500/10 px-3 py-2 rounded-lg border border-blue-500/20 active:bg-blue-500/30 uppercase tracking-tighter"
-                    >
-                      <Database className="w-3 h-3" /> {s.title.substring(0, 20)}...
+              {m.sources && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {m.sources.map((s, idx) => (
+                    <a key={idx} href={s.uri} target="_blank" rel="noopener noreferrer"
+                      className="text-[9px] text-blue-400 font-black flex items-center gap-1.5 bg-blue-500/10 px-3 py-2 rounded-lg border border-blue-500/20 uppercase">
+                      <Database className="w-3 h-3" /> Fuente PCS
                     </a>
                   ))}
                 </div>
@@ -201,41 +202,32 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ mode, onClose }) => {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5 flex items-center gap-3 shadow-xl backdrop-blur-sm">
+            <div className="bg-slate-900/60 p-4 rounded-2xl border border-white/5 flex items-center gap-3">
               <Loader2 className={`w-4 h-4 animate-spin ${isPcs ? 'text-blue-500' : 'text-amber-500'}`} />
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{status}</span>
+              <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{status}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Area Optimized for Mobile Keyboard */}
-      <div className="shrink-0 p-4 bg-slate-950 border-t border-white/10 pb-10 md:pb-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+      {/* Input */}
+      <div className="shrink-0 p-4 bg-slate-950 border-t border-white/10 pb-12 md:pb-6">
         <div className="flex gap-2">
           <input 
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={isPcs ? "¿Qué ha pasado hoy en la carrera?" : "¿Quién fue Fausto Coppi?"}
-            className="flex-1 bg-slate-900 border border-white/10 rounded-2xl py-4 px-5 text-[16px] text-white focus:outline-none focus:border-blue-500/50 transition-all shadow-inner placeholder:text-slate-600"
+            placeholder={isPcs ? "¿Quién va líder en el Tour hoy?" : "¿Quién ganó la Milán-San Remo de 1990?"}
+            className="flex-1 bg-slate-900 border border-white/10 rounded-2xl py-4 px-5 text-sm text-white focus:outline-none focus:border-blue-500/50"
           />
           <button 
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
-            className={`${isPcs ? 'bg-blue-600' : 'bg-amber-600'} p-4 rounded-2xl text-white shadow-xl active:scale-90 transition-all disabled:opacity-20 flex items-center justify-center`}
+            className={`${isPcs ? 'bg-blue-600' : 'bg-amber-600'} p-4 rounded-2xl text-white shadow-xl active:scale-90 transition-all disabled:opacity-20`}
           >
             <Send className="w-5 h-5" />
           </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between px-1">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className={`w-3 h-3 ${isPcs ? 'text-blue-500' : 'text-amber-500'}`} />
-            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">
-              Gemini 3 Pro + Google Grounding
-            </span>
-          </div>
-          <span className="text-[9px] text-slate-800 font-bold uppercase tracking-widest italic">Stable Mobile Build</span>
         </div>
       </div>
     </div>

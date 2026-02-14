@@ -35,11 +35,12 @@ const CyclingAI: React.FC = () => {
     setLoading(true);
 
     try {
-      // Inicializamos el cliente justo antes de la llamada para asegurar que usa la clave más reciente
+      // Inicialización siguiendo estrictamente las directrices del SDK.
+      // Se asume que process.env.API_KEY está disponible en el entorno de ejecución.
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: userText }] },
         config: {
           tools: [{ googleSearch: {} }],
@@ -76,13 +77,11 @@ REGLAS CRÍTICAS:
       setMessages(prev => [...prev, { role: 'bot', text: botResponse, sources }]);
     } catch (error: any) {
       console.error("AI Error:", error);
-      let errorMessage = "¡Error de conexión! El pelotón se ha cortado en un túnel. Inténtalo de nuevo.";
-      
-      if (error?.message?.includes("API_KEY") || !process.env.API_KEY) {
-        errorMessage = "Error de configuración: No se ha detectado la API KEY correctamente.";
-      }
-
-      setMessages(prev => [...prev, { role: 'bot', text: errorMessage }]);
+      // Evitamos diagnósticos manuales sobre la API KEY para no bloquear flujos válidos del entorno.
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: "¡Pinchazo técnico! No he podido procesar la respuesta. Por favor, asegúrate de que la conexión es estable e inténtalo de nuevo en unos segundos." 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -107,7 +106,7 @@ REGLAS CRÍTICAS:
         <div className="hidden sm:block">
            <div className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 flex items-center gap-2">
              <Sparkles className="w-3 h-3 text-purple-400" />
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Powered by Gemini 3 Pro</span>
+             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Powered by Gemini 3</span>
            </div>
         </div>
       </div>

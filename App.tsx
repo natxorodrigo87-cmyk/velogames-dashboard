@@ -19,7 +19,7 @@ const App: React.FC = () => {
   const [activeAI, setActiveAI] = useState<'pcs' | 'encyclopedia' | null>(null);
   const [hasKey, setHasKey] = useState<boolean>(true);
 
-  // Verificación constante de la clave para evitar fallos en refrescos de Netlify
+  // Verificación de la clave
   useEffect(() => {
     const checkKey = async () => {
       // @ts-ignore
@@ -29,11 +29,7 @@ const App: React.FC = () => {
         setHasKey(selected);
       }
     };
-    
-    // Check initial and set up a poll for stability on mobile browser tabs
     checkKey();
-    const interval = setInterval(checkKey, 3000);
-    return () => clearInterval(interval);
   }, [activeAI]);
 
   const handleOpenKey = async () => {
@@ -41,6 +37,7 @@ const App: React.FC = () => {
     if (window.aistudio) {
       // @ts-ignore
       await window.aistudio.openSelectKey();
+      // REGLA SDK: Asumir éxito inmediatamente después de abrir el selector para evitar bloqueos
       setHasKey(true);
     }
   };
@@ -223,6 +220,7 @@ const App: React.FC = () => {
                     >
                       <Key className="w-5 h-5" /> Iniciar Conexión
                     </button>
+                    <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="mt-6 text-[10px] text-slate-500 uppercase hover:underline">Info sobre facturación de Google</a>
                   </div>
                 ) : (
                   <div className="flex-1 overflow-hidden md:rounded-3xl shadow-2xl">

@@ -1,13 +1,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Bot, User, Loader2, Sparkles, Bike, ExternalLink, Info, BookOpen, RefreshCw, AlertCircle } from 'lucide-react';
+import { Send, Bot, User, Loader2, Bike, ExternalLink, Info, RefreshCw, AlertCircle, WifiOff } from 'lucide-react';
 
 type Message = {
   role: 'user' | 'bot';
   text: string;
   sources?: { uri: string; title: string }[];
   isError?: boolean;
+  isOffline?: boolean;
 };
 
 const CyclingAI: React.FC = () => {
@@ -15,7 +16,7 @@ const CyclingAI: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'bot', 
-      text: '¡Saludos, Director Deportivo! Estoy listo para asesorarte con total profundidad.\n\nTengo acceso en tiempo real a **ProCyclingStats** para resultados y noticias de última hora, pero también domino toda la **historia del ciclismo**, reglamentos técnicos, mecánica y tácticas de carrera.\n\n¿Quieres saber quién ganó el Tour en 1984, cómo funcionan los desarrollos en montaña o qué corredores son favoritos para mañana? Pregúntame lo que necesites.' 
+      text: '¡Director Deportivo! Estoy listo.\n\nHe optimizado mi conexión para funcionar perfectamente incluso si me tienes instalado como App en tu móvil. Si la red falla, activaré automáticamente el modo de emergencia para responderte.' 
     }
   ]);
   const [loading, setLoading] = useState(false);
@@ -27,11 +28,11 @@ const CyclingAI: React.FC = () => {
     }
   }, [messages, loading]);
 
-  const handleSend = async (textToRetry?: string) => {
-    const userText = textToRetry || input.trim();
+  const handleSend = async (manualText?: string) => {
+    const userText = manualText || input.trim();
     if (!userText || loading) return;
 
-    if (!textToRetry) {
+    if (!manualText) {
       setInput('');
       setMessages(prev => [...prev, { role: 'user', text: userText }]);
     }
@@ -39,26 +40,21 @@ const CyclingAI: React.FC = () => {
     setLoading(true);
 
     try {
-      // Usamos Gemini 3 Flash para máxima velocidad en móviles
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) throw new Error("API KEY MISSING");
+
+      const ai = new GoogleGenAI({ apiKey });
       
+      // INTENTO 1: Con búsqueda (Google Search)
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: { parts: [{ text: userText }] },
         config: {
           tools: [{ googleSearch: {} }],
-          thinkingConfig: { thinkingBudget: 0 }, // Desactivamos el pensamiento para evitar timeouts en móvil
-          systemInstruction: `Eres el "Oráculo Pro de la Liga Frikis", experto en ciclismo. 
-          Capacidades: 
-          1. Resultados actuales vía Google Search (PCS). 
-          2. Historia completa del ciclismo. 
-          3. Mecánica y táctica técnica. 
-          4. Consejos para Velogames. 
-          Responde de forma concisa y profesional.`,
         },
       });
 
-      const botResponse = response.text || "La grupeta me ha dejado atrás... No he podido conectar con la información.";
+      const botText = response.text || "La grupeta se ha cortado y no tengo respuesta ahora mismo.";
       
       const sources: { uri: string; title: string }[] = [];
       const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
@@ -72,145 +68,126 @@ const CyclingAI: React.FC = () => {
         });
       }
 
-      setMessages(prev => [...prev.filter(m => !m.isError), { role: 'bot', text: botResponse, sources }]);
+      setMessages(prev => [...prev.filter(m => !m.isError), { role: 'bot', text: botText, sources }]);
     } catch (error: any) {
-      console.error("AI connection failure:", error);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: "¡Pinchazo! No he podido conectar con el satélite. Esto suele pasar en móviles con poca cobertura o bloqueadores de anuncios.",
-        isError: true
-      }]);
+      console.warn("Intento con búsqueda fallido en modo Standalone, activando modo Offline-First...");
+      
+      // INTENTO 2 (Fallback): Respuesta sin herramientas (Mucho más rápida y fiable en App Mode)
+      try {
+        const aiFallback = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+        const fallbackResponse = await aiFallback.models.generateContent({
+          model: 'gemini-3-flash-preview',
+          contents: userText,
+        });
+        
+        const fallbackText = fallbackResponse.text || "He tenido un problema de red al buscar en PCS, pero aquí tienes mi análisis basado en mi conocimiento interno.";
+        setMessages(prev => [...prev.filter(m => !m.isError), { 
+          role: 'bot', 
+          text: fallbackText,
+          isOffline: true
+        }]);
+      } catch (fallbackError) {
+        setMessages(prev => [...prev, { 
+          role: 'bot', 
+          text: "¡Pinchazo total! Tu móvil ha bloqueado la conexión de la IA en este modo. Prueba a abrir la web directamente en el navegador si el error persiste.",
+          isError: true
+        }]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col h-[600px] md:h-[700px] bg-slate-900/90 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+    <div className="max-w-4xl mx-auto flex flex-col h-[500px] md:h-[650px] bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in duration-300">
       {/* Header */}
-      <div className="p-4 md:p-6 border-b border-white/5 bg-gradient-to-r from-purple-600/20 to-blue-600/10 flex items-center justify-between shrink-0">
+      <div className="p-4 border-b border-white/5 bg-slate-950/50 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl shadow-lg">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+            <Bike className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-black text-white italic uppercase tracking-tighter leading-none">Personal <span className="text-purple-400">Cycling AI</span></h2>
-            <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2 mt-1">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              Live Advisor • Optimized for Mobile
-            </p>
+            <h2 className="text-sm font-black text-white uppercase italic tracking-tighter">Oráculo <span className="text-blue-400">App Mode</span></h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Conexión Blindada</span>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-           <div className="hidden sm:flex px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 items-center gap-2">
-             <Sparkles className="w-3 h-3 text-purple-400" />
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Flash Mode</span>
-           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.03)_0%,_transparent_40%)]"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950/30">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
-            <div className={`flex gap-3 max-w-[95%] md:max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-slate-800' : 'bg-purple-600 shadow-lg'}`}>
-                {m.role === 'user' ? <User className="w-4 h-4 text-slate-400" /> : <Bot className="w-4 h-4 text-white" />}
-              </div>
-              <div className="space-y-3">
-                <div className={`p-4 rounded-2xl text-[13px] leading-relaxed whitespace-pre-line shadow-xl ${
-                  m.role === 'user' 
-                    ? 'bg-blue-600 text-white rounded-tr-none' 
-                    : m.isError 
-                      ? 'bg-red-500/10 border border-red-500/20 text-red-200 rounded-tl-none' 
-                      : 'bg-slate-800/80 text-slate-200 rounded-tl-none border border-white/5'
-                }`}>
-                  {m.isError && <AlertCircle className="w-4 h-4 mb-2 text-red-400" />}
-                  {m.text}
-                  {m.isError && (
-                    <button 
-                      onClick={() => handleSend(messages[messages.length-2]?.text)} 
-                      className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white text-[10px] font-black uppercase rounded-lg hover:bg-red-400 transition-colors"
-                    >
-                      <RefreshCw className="w-3 h-3" /> Reintentar Ataque
-                    </button>
-                  )}
-                </div>
-                
-                {m.sources && m.sources.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 ml-1">
-                      <Info className="w-3 h-3" /> Fuentes PCS:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {m.sources.map((source, idx) => (
-                        <a 
-                          key={idx}
-                          href={source.uri}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-white/5 rounded-lg text-[10px] text-purple-400 hover:text-white hover:bg-purple-600/40 transition-all font-bold"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          {source.title.length > 18 ? source.title.substring(0, 18) + '...' : source.title}
-                        </a>
-                      ))}
-                    </div>
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[92%] space-y-2 ${m.role === 'user' ? 'flex flex-col items-end' : ''}`}>
+              <div className={`p-3 rounded-2xl text-[13px] leading-relaxed shadow-sm ${
+                m.role === 'user' 
+                  ? 'bg-blue-600 text-white rounded-tr-none' 
+                  : m.isError 
+                    ? 'bg-red-500/10 border border-red-500/30 text-red-200' 
+                    : 'bg-slate-800 text-slate-200 rounded-tl-none'
+              }`}>
+                {m.isError && <AlertCircle className="w-4 h-4 mb-2 text-red-500" />}
+                {m.text}
+                {m.isOffline && (
+                  <div className="mt-2 pt-2 border-t border-white/5 flex items-center gap-2 text-[10px] text-amber-500 font-bold uppercase italic">
+                    <WifiOff className="w-3 h-3" /> Modo Offline Activado por red inestable
                   </div>
                 )}
+                {m.isError && (
+                  <button 
+                    onClick={() => handleSend(messages[messages.length-2]?.text)} 
+                    className="mt-3 flex items-center gap-2 w-full justify-center py-2 bg-red-600 text-white rounded-lg font-black text-[10px] uppercase transition-transform active:scale-95"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Reintentar
+                  </button>
+                )}
               </div>
+              
+              {m.sources && m.sources.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {m.sources.slice(0, 2).map((s, idx) => (
+                    <a key={idx} href={s.uri} target="_blank" className="text-[9px] text-blue-400 font-bold flex items-center gap-1 bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/10">
+                      <ExternalLink className="w-2 h-2" /> {s.title.substring(0, 15)}...
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center animate-pulse">
-                <Loader2 className="w-4 h-4 text-white animate-spin" />
-              </div>
-              <div className="bg-slate-800/50 p-4 rounded-2xl rounded-tl-none border border-white/5">
-                <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" />
-                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.4s]" />
-                </div>
-              </div>
+            <div className="bg-slate-800 p-3 rounded-2xl animate-pulse">
+              <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
             </div>
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-slate-950/80 border-t border-white/5 shrink-0">
-        <div className="relative">
+      <div className="p-3 bg-slate-900 border-t border-white/5">
+        <div className="relative flex gap-2">
           <input 
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Pregunta sobre historia o actualidad..."
-            className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder:text-slate-600"
+            placeholder="Mensaje..."
+            className="flex-1 bg-slate-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
           />
           <button 
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-30 text-white rounded-xl shadow-lg transition-transform active:scale-90"
+            className="bg-blue-600 p-3 rounded-xl text-white disabled:opacity-50 shadow-lg active:scale-90 transition-transform"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            <Send className="w-5 h-5" />
           </button>
         </div>
-        <div className="mt-3 flex items-center justify-center gap-6">
-           <p className="text-[8px] md:text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-            <Bike className="w-3 h-3" /> Live Results
-          </p>
-          <div className="w-1 h-1 bg-slate-800 rounded-full" />
-          <p className="text-[8px] md:text-[9px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
-            <RefreshCw className="w-3 h-3" /> Anti-Timeout ON
-          </p>
-        </div>
+        <p className="mt-2 text-center text-[8px] text-slate-600 font-bold uppercase tracking-widest">
+          Protección Standalone Activa • Liga Frikis 2026
+        </p>
       </div>
     </div>
   );

@@ -8,65 +8,60 @@ interface SummaryCardsProps {
 }
 
 const SummaryCards: React.FC<SummaryCardsProps> = ({ summary }) => {
-  const cards = [
-    {
-      title: 'Líder Actual',
-      value: summary.leaderName,
-      icon: Trophy,
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
-      borderColor: 'border-yellow-500/20',
-      accentColor: summary.leaderColor
-    },
-    {
-      title: 'Carreras Finalizadas',
-      value: `${summary.completedRaces}`,
-      icon: Activity,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
-      borderColor: 'border-blue-500/20',
-      accentColor: '#3b82f6'
-    },
-    {
-      title: 'Récord en Carrera',
-      value: `${summary.topScore} pts`,
-      subValue: `Logrado por ${summary.topScorePlayer}`,
-      icon: Zap,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10',
-      borderColor: 'border-purple-500/20',
-      accentColor: '#a855f7'
-    }
-  ];
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-      {cards.map((card, i) => (
-        <div 
-          key={i} 
-          className="relative overflow-hidden bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-xl group hover:border-white/10 transition-all duration-500"
-        >
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">{card.title}</p>
-              <h3 className="text-2xl font-black text-white italic tracking-tight leading-none uppercase">
-                {card.value}
-              </h3>
-              {card.subValue && (
-                <p className="text-slate-400 text-[9px] font-bold mt-2 uppercase opacity-60 italic">{card.subValue}</p>
-              )}
-            </div>
-            <div className={`p-3 rounded-2xl ${card.bgColor} ${card.borderColor} border transition-transform duration-500 group-hover:scale-110`}>
-              <card.icon className={`w-5 h-5 ${card.color}`} />
-            </div>
+    <div className="flex flex-col gap-5 max-w-2xl mx-auto md:mx-0 w-full">
+      
+      {/* LÍDER ACTUAL */}
+      <div className="relative overflow-hidden bg-[#0a0f1e] border border-white/5 rounded-[32px] p-8 md:p-10 transition-all shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.25em] mb-3">LÍDER ACTUAL</p>
+            <h3 className="text-3xl md:text-4xl font-black text-white italic tracking-tighter uppercase font-heading leading-none">
+              {summary.leaderName}
+            </h3>
           </div>
-          
-          <div 
-            className="absolute bottom-0 left-0 h-1 transition-all duration-700 group-hover:w-full opacity-50" 
-            style={{ backgroundColor: card.accentColor, width: i === 0 ? '100%' : '20%' }}
-          />
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] bg-[#fbbf24]/10 border border-[#fbbf24]/20 flex items-center justify-center shadow-inner">
+            <Trophy className="w-8 h-8 md:w-10 md:h-10 text-[#fbbf24]" />
+          </div>
         </div>
-      ))}
+        <div className="absolute bottom-0 left-0 h-1.5 w-full bg-gradient-to-r from-[#fbbf24] to-transparent opacity-10" />
+      </div>
+
+      {/* CARRERAS FINALIZADAS */}
+      <div className="relative overflow-hidden bg-[#0a0f1e] border border-white/5 rounded-[32px] p-8 md:p-10 transition-all shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.25em] mb-3">CARRERAS FINALIZADAS</p>
+            <h3 className="text-5xl md:text-6xl font-black text-white italic tracking-tighter font-heading leading-none">
+              {summary.completedRaces}
+            </h3>
+          </div>
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] bg-[#3b82f6]/10 border border-[#3b82f6]/20 flex items-center justify-center shadow-inner">
+            <Activity className="w-8 h-8 md:w-10 md:h-10 text-[#3b82f6]" />
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 h-1.5 w-[35%] bg-[#3b82f6] opacity-40 rounded-r-full" />
+      </div>
+
+      {/* RÉCORD EN CARRERA */}
+      <div className="relative overflow-hidden bg-[#0a0f1e] border border-white/5 rounded-[32px] p-8 md:p-10 transition-all shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.25em] mb-3">RÉCORD EN CARRERA</p>
+            <h3 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter font-heading leading-none">
+              {summary.topScore} <span className="text-xl md:text-2xl font-black">PTS</span>
+            </h3>
+            <p className="text-slate-500 text-[10px] font-black mt-4 uppercase tracking-widest italic opacity-50">
+              LOGRADO POR {summary.topScorePlayer}
+            </p>
+          </div>
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-[24px] bg-[#a855f7]/10 border border-[#a855f7]/20 flex items-center justify-center shadow-inner">
+            <Zap className="w-8 h-8 md:w-10 md:h-10 text-[#a855f7]" />
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 h-1.5 w-full bg-gradient-to-r from-[#a855f7]/40 to-transparent" />
+      </div>
+
     </div>
   );
 };

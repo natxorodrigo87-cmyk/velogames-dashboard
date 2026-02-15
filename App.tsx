@@ -100,60 +100,28 @@ const App: React.FC = () => {
 
   return (
     <Layout>
+      {/* Sección superior de tarjetas - Siempre centrada y de ancho moderado */}
       <SummaryCards summary={summary} />
 
-      <div className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0 mb-10">
-        <div className="flex items-center p-1.5 bg-slate-900/60 border border-white/5 rounded-2xl backdrop-blur-md">
-          <button
-            onClick={() => setActiveTab('general')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
-              activeTab === 'general' 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <LayoutDashboard className="w-3.5 h-3.5" />
-            Clasificación
-          </button>
-          <button
-            onClick={() => setActiveTab('mortadela')}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
-              activeTab === 'mortadela' 
-                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5" />
-            Records
-          </button>
-        </div>
-      </div>
-
       {activeTab === 'general' ? (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div className="lg:col-span-2 order-2 lg:order-1">
+        <div className="animate-in fade-in duration-700 space-y-16 pb-32">
+          {/* La clasificación general ahora puede ocupar más ancho en escritorio */}
+          <div className="grid grid-cols-1 gap-12">
+            <GeneralTable players={PLAYERS} stats={stats} />
+            <div className="h-[400px]">
               <EvolutionChart data={chartData} players={PLAYERS} />
             </div>
-            
-            <div className="order-1 lg:order-2 flex flex-col gap-6">
-              <GeneralTable players={PLAYERS} stats={stats} />
-            </div>
           </div>
-
-          <div className="mt-16">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-black text-white italic uppercase tracking-tight">Calendario & <span className="text-blue-500">Resultados</span></h2>
-                <p className="text-slate-500 text-sm font-medium mt-1">Detalle de puntos asignados por carrera y categoría.</p>
-              </div>
+          
+          <div className="pt-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter font-heading underline decoration-blue-500 decoration-4 underline-offset-8">Resultados</h2>
               <Filters 
                 categories={CATEGORIES} 
                 selectedCategoryId={selectedCategoryId} 
                 onSelectCategory={setSelectedCategoryId} 
               />
             </div>
-            
             <RaceDetails 
               races={filteredRaces} 
               results={RESULTS} 
@@ -161,15 +129,41 @@ const App: React.FC = () => {
               categories={CATEGORIES}
             />
           </div>
-        </>
+        </div>
       ) : (
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="max-w-4xl mx-auto">
-             <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
-          </div>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12 pb-32">
+          <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
           <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>
       )}
+
+      {/* NAVEGACIÓN INFERIOR FIJA - ESTILO EXACTO CAPTURA */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-sm">
+        <div className="flex items-center p-1.5 bg-[#0a0f1e]/90 border border-white/10 rounded-[32px] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <button
+            onClick={() => setActiveTab('general')}
+            className={`flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-[26px] text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+              activeTab === 'general' 
+                ? 'bg-[#3b82f6] text-white shadow-lg shadow-blue-600/40' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Clasificación
+          </button>
+          <button
+            onClick={() => setActiveTab('mortadela')}
+            className={`flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-[26px] text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+              activeTab === 'mortadela' 
+                ? 'bg-[#f59e0b] text-white shadow-lg shadow-amber-600/40' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <Flame className="w-4 h-4" />
+            Records
+          </button>
+        </div>
+      </div>
     </Layout>
   );
 };

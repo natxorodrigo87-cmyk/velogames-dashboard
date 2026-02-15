@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Zap, Radio, History } from 'lucide-react';
+import { Send, Loader2, Zap, Radio, History, AlertCircle } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 type Mode = 'pcs' | 'encyclopedia';
-type Message = { role: 'user' | 'bot'; text: string; timestamp: string };
+type Message = { role: 'user' | 'bot'; text: string; timestamp: string; isError?: boolean };
 
 const CyclingAI: React.FC = () => {
   const [mode, setMode] = useState<Mode>('pcs');
@@ -13,19 +13,19 @@ const CyclingAI: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const systemInstructions = {
-    pcs: "Eres 'Radio Tour Frikis', experto en Velogames. Tono informal, divertido y técnico. Habla de 'mortadelas' (ciclistas baratos de 4-6 créditos) y bromea con los abandonos. Responde siempre en español, de forma breve y con emojis de ciclismo 🚲.",
-    encyclopedia: "Eres el Historiador de la Liga Frikis. Conoces todo sobre el ciclismo épico: Merckx, Indurain, Pantani. Responde con datos curiosos y un tono legendario."
+    pcs: "Eres 'Radio Tour Frikis'. Un director deportivo experto en la Liga Frikis y Velogames. Tu tono es divertido, un poco cínico y muy experto. Hablas de 'mortadelas' (corredores baratos que dan muchos puntos) y 'vatios'. Responde siempre en español y usa emojis de ciclismo 🚲.",
+    encyclopedia: "Eres el Historiador de la Liga Frikis. Tono épico, culto y legendario sobre la historia del ciclismo (Merckx, Indurain, etc.). Responde siempre en español."
   };
 
   useEffect(() => {
-    const welcomeMsg = mode === 'pcs' 
+    const welcome = mode === 'pcs' 
       ? '🎙️ **Radio Tour:** Conexión establecida. ¿A qué mortadela quieres que analicemos hoy?' 
-      : '📚 **Archivo Histórico:** ¿Qué leyenda del pedal quieres rescatar del olvido?';
+      : '📚 **Archivo Histórico:** ¿Qué gesta del pedal quieres recordar hoy?';
     
     setMessages([{ 
       role: 'bot', 
-      text: welcomeMsg,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      text: welcome, 
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
     }]);
   }, [mode]);
 
@@ -36,136 +36,142 @@ const CyclingAI: React.FC = () => {
   }, [messages, loading]);
 
   const handleSend = async () => {
-    const userText = input.trim();
-    if (!userText || loading) return;
+    const text = input.trim();
+    if (!text || loading) return;
 
-    // Obtenemos la clave inyectada por Vite desde Netlify
+    // Vite inyecta la clave desde el entorno de Netlify definido en vite.config.ts
     const apiKey = process.env.API_KEY;
 
-    // Validación estricta de la clave
-    if (!apiKey || apiKey === "" || apiKey === "undefined") {
+    if (!apiKey || apiKey === "undefined" || apiKey.length < 10) {
       setMessages(prev => [...prev, { 
         role: 'bot', 
-        text: "❌ **ERROR DE CONFIGURACIÓN:** No detecto tu API_KEY. \n\n1. Ve al panel de Netlify.\n2. Asegúrate de que la variable se llame exactamente `API_KEY`.\n3. Tras guardarla, debes volver a desplegar la web (Trigger Deploy) para que surta efecto.",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: "❌ **ERROR DE CONFIGURACIÓN:** No se detecta la API_KEY en el entorno. Asegúrate de haberla puesto en Netlify, guardado y hecho un 'Clear cache and deploy site'.",
+        timestamp: "Ahora",
+        isError: true
       }]);
       return;
     }
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userText, timestamp }]);
+    setMessages(prev => [...prev, { role: 'user', text, timestamp: time }]);
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
+      const genAI = new GoogleGenAI({ apiKey });
+      const response = await genAI.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: userText,
+        contents: [{ parts: [{ text }] }],
         config: {
           systemInstruction: systemInstructions[mode],
           temperature: 0.8,
         }
       });
 
-      const botText = response.text || "Perdemos la señal en el túnel de Glandon...";
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: botText, 
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-    } catch (error: any) {
-      console.error("AI Error:", error);
-      let errorMsg = "⚠️ **AVERÍA MECÁNICA:** El Cerebro no responde.";
-      
-      if (error?.message?.includes('API key not valid')) {
-        errorMsg = "⚠️ **API KEY INVÁLIDA:** La clave que pusiste en Netlify no es correcta. Revísala en Google AI Studio.";
-      } else if (error?.message?.includes('quota')) {
-        errorMsg = "⚠️ **SIN Vatios:** Has superado el límite gratuito de mensajes por hoy.";
-      }
+      const botResponse = response.text;
+      if (!botResponse) throw new Error("Respuesta vacía del modelo");
 
       setMessages(prev => [...prev, { 
         role: 'bot', 
-        text: errorMsg,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: botResponse, 
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
       }]);
+    } catch (err: any) {
+      console.error("Error detallado de Gemini:", err);
+      let errorMsg = "⚠️ **AVERÍA MECÁNICA:** El asistente ha pinchado.";
+      
+      if (err.message?.includes('API key not valid')) {
+        errorMsg = "⚠️ **CLAVE INVÁLIDA:** La clave en Netlify no es correcta. Genera una nueva en Google AI Studio eligiendo el proyecto 'Velogames' y vuelve a pegarla en Netlify.";
+      } else if (err.message?.includes('User location is not supported')) {
+        errorMsg = "🌍 **REGIÓN NO SOPORTADA:** Gemini no está disponible en tu ubicación actual sin VPN.";
+      } else {
+        // Mostramos el error técnico para que el usuario sepa qué pasa
+        errorMsg = `⚠️ **DIAGNÓSTICO:** ${err.message || "Error desconocido en la conexión"}`;
+      }
+      
+      setMessages(prev => [...prev, { role: 'bot', text: errorMsg, timestamp: "Error", isError: true }]);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col w-full h-[600px] bg-slate-950 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl relative">
-      {/* Header del Chat */}
-      <div className="p-5 border-b border-white/5 bg-white/5 backdrop-blur-xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+    <div className="flex flex-col w-full h-[600px] bg-[#0a0f1e] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl relative">
+      {/* Header */}
+      <div className="p-5 border-b border-white/5 bg-slate-900/50 flex items-center justify-between backdrop-blur-xl z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-            <Zap className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 group">
+            <Zap className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-white uppercase tracking-wider">Cerebro Frikis</h2>
-            <p className="text-[10px] text-purple-400 font-bold uppercase tracking-tighter">Motor Gemini 3.0</p>
+            <h2 className="text-xs font-black text-white uppercase tracking-widest leading-none mb-1">Cerebro Frikis</h2>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter">Motor Gemini 3.0</span>
+            </div>
           </div>
         </div>
         
-        <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+        <div className="flex gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/5">
           <button 
             onClick={() => setMode('pcs')} 
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'pcs' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
-            <Radio className="w-3 h-3" /> Radio PCS
+            <Radio className="w-3.5 h-3.5" /> Radio PCS
           </button>
           <button 
             onClick={() => setMode('encyclopedia')} 
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${mode === 'encyclopedia' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
-            <History className="w-3 h-3" /> Historia
+            <History className="w-3.5 h-3.5" /> Historia
           </button>
         </div>
       </div>
 
-      {/* Cuerpo del Chat */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-950/50 scrollbar-hide">
+      {/* Chat Box */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide bg-gradient-to-b from-transparent to-black/20">
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2`}>
-            <div className={`max-w-[85%] p-4 rounded-2xl shadow-xl ${
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-3 duration-500`}>
+            <div className={`max-w-[85%] p-4 rounded-3xl text-[13px] leading-relaxed shadow-xl ${
               m.role === 'user' 
-                ? 'bg-blue-600 text-white rounded-tr-none border border-blue-400/30' 
-                : 'bg-slate-900 border border-white/10 text-slate-200 rounded-tl-none'
+                ? 'bg-blue-600 text-white rounded-tr-none' 
+                : m.isError 
+                  ? 'bg-red-500/10 border border-red-500/30 text-red-200 rounded-tl-none'
+                  : 'bg-slate-800/80 border border-white/5 text-slate-200 rounded-tl-none backdrop-blur-sm'
             }`}>
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">{m.text}</div>
+              {m.isError && <AlertCircle className="w-4 h-4 mb-2 opacity-50" />}
+              {m.text}
             </div>
-            <span className="text-[9px] font-black text-slate-600 uppercase mt-2 tracking-widest px-1">
+            <span className="text-[8px] text-slate-600 font-black mt-2 uppercase tracking-[0.2em] px-1">
               {m.role === 'user' ? 'Tú' : 'Cerebro'} • {m.timestamp}
             </span>
           </div>
         ))}
         {loading && (
-          <div className="flex items-center gap-3 text-purple-400 text-[10px] font-black uppercase tracking-widest bg-purple-500/10 p-3 rounded-xl border border-purple-500/20 w-fit animate-pulse">
-            <Loader2 className="w-3 h-3 animate-spin" />
+          <div className="flex items-center gap-3 text-purple-400 text-[10px] font-black uppercase tracking-[0.2em] bg-purple-500/5 p-3 rounded-2xl border border-purple-500/10 w-fit animate-pulse">
+            <Loader2 className="w-4 h-4 animate-spin" />
             Subiendo el Tourmalet...
           </div>
         )}
       </div>
 
-      {/* Input */}
-      <div className="p-4 bg-slate-950 border-t border-white/5">
+      {/* Input Area */}
+      <div className="p-6 bg-slate-950/80 border-t border-white/5 backdrop-blur-2xl">
         <div className="relative flex items-center gap-3">
           <input 
             type="text" 
             value={input} 
             onChange={(e) => setInput(e.target.value)} 
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={mode === 'pcs' ? "Pregunta sobre mortadelas..." : "Busca una leyenda..."}
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-purple-500 transition-all placeholder:text-slate-600"
+            placeholder={mode === 'pcs' ? "Pregunta sobre mortadelas..." : "Hito histórico..."}
+            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white outline-none focus:border-purple-500/50 transition-all placeholder:text-slate-600 font-medium"
           />
           <button 
             onClick={handleSend} 
             disabled={!input.trim() || loading}
-            className="w-14 h-14 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-800 text-white rounded-2xl flex items-center justify-center transition-all shadow-xl hover:shadow-purple-500/20"
+            className="w-14 h-14 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-900 disabled:text-slate-700 text-white rounded-2xl flex items-center justify-center transition-all shadow-2xl active:scale-95 group"
           >
-            <Send className={`w-6 h-6 ${loading ? 'opacity-0' : 'opacity-100'}`} />
-            {loading && <Loader2 className="w-6 h-6 animate-spin absolute" />}
+            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />}
           </button>
         </div>
       </div>

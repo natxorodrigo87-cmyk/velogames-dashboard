@@ -8,12 +8,13 @@ import Filters from './components/Filters.tsx';
 import SummaryCards from './components/SummaryCards.tsx';
 import MortadelaTable from './components/MortadelaTable.tsx';
 import AbandonosTable from './components/AbandonosTable.tsx';
+import CyclingAI from './components/CyclingAI.tsx';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
-import { LayoutDashboard, Flame } from 'lucide-react';
+import { LayoutDashboard, Flame, BrainCircuit } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'general' | 'mortadela'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'mortadela' | 'ai'>('general');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const stats = useMemo<GlobalStats[]>(() => {
@@ -100,12 +101,10 @@ const App: React.FC = () => {
 
   return (
     <Layout>
-      {/* Sección superior de tarjetas - Siempre centrada y de ancho moderado */}
       <SummaryCards summary={summary} />
 
       {activeTab === 'general' ? (
         <div className="animate-in fade-in duration-700 space-y-16 pb-32">
-          {/* La clasificación general ahora puede ocupar más ancho en escritorio */}
           <div className="grid grid-cols-1 gap-12">
             <GeneralTable players={PLAYERS} stats={stats} />
             <div className="h-[400px]">
@@ -130,37 +129,54 @@ const App: React.FC = () => {
             />
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'mortadela' ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12 pb-32">
           <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
           <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
         </div>
+      ) : (
+        <div className="animate-in fade-in zoom-in-95 duration-500 pb-32">
+          <CyclingAI />
+        </div>
       )}
 
-      {/* NAVEGACIÓN INFERIOR FIJA - ESTILO EXACTO CAPTURA */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-sm">
-        <div className="flex items-center p-1.5 bg-[#0a0f1e]/90 border border-white/10 rounded-[32px] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      {/* NAVEGACIÓN INFERIOR FIJA - ADAPTADA PARA 3 BOTONES */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-lg">
+        <div className="flex items-center p-1.5 bg-[#0a0f1e]/90 border border-white/10 rounded-[32px] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-[26px] text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-[26px] text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
               activeTab === 'general' 
                 ? 'bg-[#3b82f6] text-white shadow-lg shadow-blue-600/40' 
                 : 'text-slate-500 hover:text-slate-300'
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
-            Clasificación
+            <span>Clasificación</span>
           </button>
+          
           <button
             onClick={() => setActiveTab('mortadela')}
-            className={`flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-[26px] text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-[26px] text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
               activeTab === 'mortadela' 
                 ? 'bg-[#f59e0b] text-white shadow-lg shadow-amber-600/40' 
                 : 'text-slate-500 hover:text-slate-300'
             }`}
           >
             <Flame className="w-4 h-4" />
-            Records
+            <span>Records</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 rounded-[26px] text-[9px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
+              activeTab === 'ai' 
+                ? 'bg-[#a855f7] text-white shadow-lg shadow-purple-600/40' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            <BrainCircuit className="w-4 h-4" />
+            <span>Entrenador</span>
           </button>
         </div>
       </div>

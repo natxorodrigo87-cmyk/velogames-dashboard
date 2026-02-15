@@ -1,49 +1,32 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Send, Loader2, Zap } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
-import { Send, Globe, Loader2, X, AlertCircle, RefreshCw } from 'lucide-react';
 
-interface CyclingAIProps {
-  onClose: () => void;
-}
+type Mode = 'pcs' | 'encyclopedia';
+type Message = { role: 'user' | 'bot'; text: string; };
 
-type Message = {
-  role: 'user' | 'bot';
-  text: string;
-  isError?: boolean;
-};
-
-const CyclingAI: React.FC<CyclingAIProps> = ({ onClose }) => {
+const CyclingAI: React.FC = () => {
+  const [mode, setMode] = useState<Mode>('pcs');
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [connectionIssue, setConnectionIssue] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMessages([{ 
       role: 'bot', 
-      text: '🎙️ **Radio Tour:** "Conexión con Procyclingstats establecida. ¿Qué quieres consultar?"' 
+      text: mode === 'pcs' 
+        ? '🎙️ **Radio Tour PCS:** Conexión directa establecida. Pregúntame sobre resultados de Velogames o el estado del pelotón.' 
+        : '📚 **Enciclopedia Frikis:** Archivo histórico cargado. ¿Qué leyenda del ciclismo quieres recordar hoy?'
     }]);
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, loading]);
-
-  const repairConnection = async () => {
-    try {
-      // @ts-ignore
-      if (window.aistudio?.openSelectKey) {
-        // @ts-ignore
-        await window.aistudio.openSelectKey();
-        setConnectionIssue(false);
-        setMessages(prev => [...prev, { role: 'bot', text: '✅ **Conexión reparada.** Prueba a preguntar de nuevo.' }]);
-      }
-    } catch (e) {
-      console.error(e);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
-  };
+  }, [messages, loading]);
 
   const handleSend = async () => {
     const userText = input.trim();
@@ -52,110 +35,76 @@ const CyclingAI: React.FC<CyclingAIProps> = ({ onClose }) => {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setLoading(true);
-    setConnectionIssue(false);
 
     try {
-      // Creamos la instancia en el momento para usar la key que esté activa
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Inicializamos la IA directamente (Netlify inyectará la clave automáticamente)
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: userText,
         config: {
-          systemInstruction: 'Eres un experto en ciclismo. Usa Procyclingstats para dar datos breves y exactos. No des rodeos.',
-          tools: [{ googleSearch: {} }],
-        },
+          systemInstruction: mode === 'pcs' 
+            ? "Eres un experto en la Liga Frikis de Velogames. Conoces los resultados y te gusta bromear sobre la 'mortadela'. Responde de forma técnica y divertida."
+            : "Eres el historiador de la Liga Frikis. Conoces anécdotas de ciclistas clásicos y leyendas del deporte."
+        }
       });
 
-      const text = response.text || "No hay señal en este punto del recorrido.";
-      setMessages(prev => [...prev, { role: 'bot', text }]);
-    } catch (error: any) {
-      console.error("Chat Error:", error);
-      setConnectionIssue(true);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: "⚠️ **LA CONEXIÓN HA FALLADO.** Esto ocurre cuando la llave de Google necesita ser reactivada.",
-        isError: true
-      }]);
+      const text = response.text;
+      setMessages(prev => [...prev, { role: 'bot', text: text || "Se ha cortado la comunicación en el túnel." }]);
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => [...prev, { role: 'bot', text: "⚠️ Error de conexión. Asegúrate de que la API_KEY esté configurada en Netlify." }]);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col w-full h-full bg-slate-950 text-white">
-      
-      {/* HEADER */}
-      <div className="p-4 border-b border-white/10 flex items-center justify-between bg-blue-600/20">
+    <div className="flex flex-col w-full min-h-[500px] bg-[#0a0f1e]/80 border border-white/10 rounded-[32px] overflow-hidden backdrop-blur-2xl shadow-2xl">
+      <div className="p-4 border-b border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between bg-white/5">
         <div className="flex items-center gap-3">
-          <Globe className="w-5 h-5 text-blue-400" />
-          <h2 className="font-black uppercase tracking-tighter italic">Radio Tour PCS</h2>
+          <div className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/30">
+            <Zap className="w-5 h-5 text-purple-500" />
+          </div>
+          <div>
+            <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">Cerebro Frikis</h2>
+            <p className="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-tighter">Gemini 3 Flash Engine</p>
+          </div>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full">
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+          <button onClick={() => setMode('pcs')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${mode === 'pcs' ? 'bg-blue-600 text-white' : 'text-slate-500'}`}>Radio PCS</button>
+          <button onClick={() => setMode('encyclopedia')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${mode === 'encyclopedia' ? 'bg-purple-600 text-white' : 'text-slate-500'}`}>Historia</button>
+        </div>
       </div>
-
-      {/* CHAT MESSAGES */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[350px] max-h-[500px]">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
-              m.role === 'user' ? 'bg-blue-600' : m.isError ? 'bg-red-900/40 border border-red-500/50' : 'bg-slate-900 border border-white/5'
-            }`}>
-              <div className="whitespace-pre-wrap">{m.text}</div>
-              
-              {m.isError && (
-                <button 
-                  onClick={repairConnection}
-                  className="mt-3 w-full py-2 bg-white text-black rounded-lg font-black text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
-                >
-                  <RefreshCw className="w-3 h-3" /> Reparar conexión ahora
-                </button>
-              )}
+            <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${m.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-900 border border-white/10 text-slate-200 rounded-tl-none'}`}>
+              {m.text}
             </div>
           </div>
         ))}
         {loading && (
-          <div className="flex gap-2 items-center text-slate-500 p-2">
+          <div className="flex items-center gap-2 text-blue-400 text-[10px] font-black uppercase animate-pulse">
             <Loader2 className="w-3 h-3 animate-spin" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Buscando en PCS...</span>
+            Escalando el puerto...
           </div>
         )}
       </div>
-
-      {/* INPUT AREA */}
-      <div className="p-4 bg-slate-900/50 border-t border-white/10">
-        {connectionIssue ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-red-400 text-[10px] font-black uppercase mb-1">
-              <AlertCircle className="w-3 h-3" /> Problema detectado
-            </div>
-            <button 
-              onClick={repairConnection}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20"
-            >
-              PULSA AQUÍ PARA ARREGLARLO
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <input 
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Escribe aquí..."
-              className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-sm focus:border-blue-500 outline-none"
-            />
-            <button 
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="p-2 bg-blue-600 rounded-xl disabled:opacity-20"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </div>
-        )}
+      <div className="p-4 bg-black/40 border-t border-white/5">
+        <div className="flex gap-3">
+          <input 
+            type="text" 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Escribe tu pregunta..."
+            className="flex-1 bg-[#020617] border border-white/10 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 outline-none text-white"
+          />
+          <button onClick={handleSend} disabled={!input.trim() || loading} className="w-12 h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl flex items-center justify-center disabled:opacity-50">
+            <Send className="w-5 h-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

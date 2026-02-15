@@ -1,16 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
-import Layout from './components/Layout.tsx';
-import GeneralTable from './components/GeneralTable.tsx';
-import EvolutionChart from './components/EvolutionChart.tsx';
-import RaceDetails from './components/RaceDetails.tsx';
-import Filters from './components/Filters.tsx';
-import SummaryCards from './components/SummaryCards.tsx';
-import MortadelaTable from './components/MortadelaTable.tsx';
-import AbandonosTable from './components/AbandonosTable.tsx';
-import CyclingAI from './components/CyclingAI.tsx';
-import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData.ts';
-import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types.ts';
+import Layout from './components/Layout';
+import GeneralTable from './components/GeneralTable';
+import EvolutionChart from './components/EvolutionChart';
+import RaceDetails from './components/RaceDetails';
+import Filters from './components/Filters';
+import SummaryCards from './components/SummaryCards';
+import MortadelaTable from './components/MortadelaTable';
+import AbandonosTable from './components/AbandonosTable';
+import CyclingAI from './components/CyclingAI';
+import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData';
+import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types';
 import { LayoutDashboard, Flame, BrainCircuit } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -140,7 +140,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* NAVEGACIÓN INFERIOR FIJA - ADAPTADA PARA 3 BOTONES */}
+      {/* NAVEGACIÓN INFERIOR FIJA */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-[95%] max-w-lg">
         <div className="flex items-center p-1.5 bg-[#0a0f1e]/90 border border-white/10 rounded-[32px] backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
           <button

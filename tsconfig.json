@@ -15,8 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-    "allowImportingTsExtensions": true
+    "jsx": "react-jsx"
   },
   "include": ["index.tsx", "App.tsx", "components/**/*", "types.ts", "mockData.ts"]
 }

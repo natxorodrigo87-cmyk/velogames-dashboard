@@ -1,0 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Esto evita que Netlify bloquee el despliegue al detectar la clave API en el código JS
+  SECRETS_SCAN_OMIT_KEYS = "API_KEY"

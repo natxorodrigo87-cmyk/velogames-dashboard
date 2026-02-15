@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -6,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Esto mapea la variable de Netlify al código de la App
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
+    // Inyectamos la variable de Netlify. Si no existe, pasamos string vacío.
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || "")
   }
 })

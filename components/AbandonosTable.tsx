@@ -9,7 +9,7 @@ interface AbandonosTableProps {
 }
 
 const AbandonosTable: React.FC<AbandonosTableProps> = ({ records, players }) => {
-  const races = ['TDU', 'Alula', 'CV', 'Besseges', 'Omán'];
+  const races = ['TDU', 'Alula', 'CV', 'Besseges', 'Omán', 'UAE Tour', 'Algarve', 'Ruta del Sol'];
 
   return (
     <div className="bg-slate-900/80 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 mt-8">

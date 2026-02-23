@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Layout from './components/Layout';
 import GeneralTable from './components/GeneralTable';
@@ -11,7 +10,7 @@ import AbandonosTable from './components/AbandonosTable';
 import CyclingAI from './components/CyclingAI';
 import { PLAYERS, RACES, MOCK_RESULTS as RESULTS, CATEGORIES, MORTADELAS, WITHDRAWALS } from './mockData';
 import { GlobalStats, ChartDataPoint, RaceStatus, LeagueSummary } from './types';
-import { LayoutDashboard, Flame, BrainCircuit, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Flame, BrainCircuit, ChevronRight, Zap } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'records' | 'ai'>('general');
@@ -42,25 +41,21 @@ const App: React.FC = () => {
   }, []);
 
   const summary = useMemo<LeagueSummary>(() => {
-    const sorted = [...stats].sort((a, b) => b.totalPoints - a.totalPoints);
-    const leader = PLAYERS.find(p => p.id === sorted[0]?.playerId);
+    const sortedByPoints = [...stats].sort((a, b) => b.totalPoints - a.totalPoints);
+    const leader = PLAYERS.find(p => p.id === sortedByPoints[0]?.playerId);
     
-    let topScore = 0;
-    let topPlayerId = '';
-    RESULTS.forEach(r => {
-      if (r.points > topScore) {
-        topScore = r.points;
-        topPlayerId = r.playerId;
-      }
-    });
+    const maxWins = Math.max(...stats.map(s => s.racesWon));
+    const mostWinsPlayers = stats
+      .filter(s => s.racesWon === maxWins && maxWins > 0)
+      .map(s => PLAYERS.find(p => p.id === s.playerId)?.name || '---');
 
     return {
       leaderName: leader?.name || '---',
       leaderColor: leader?.color || '#fff',
       totalRaces: RACES.length,
       completedRaces: RACES.filter(r => r.status === RaceStatus.PLAYED).length,
-      topScore,
-      topScorePlayer: PLAYERS.find(p => p.id === topPlayerId)?.name || '---'
+      mostWinsPlayers: mostWinsPlayers.length > 0 ? mostWinsPlayers : ['---'],
+      mostWinsCount: maxWins
     };
   }, [stats]);
 
@@ -104,69 +99,88 @@ const App: React.FC = () => {
       <SummaryCards summary={summary} />
 
       {/* NAVEGACIÓN SUPERIOR */}
-      <nav className="flex flex-col gap-3 mt-4">
-        <div className="flex gap-2 bg-slate-900/50 p-1.5 rounded-[22px] border border-white/5 backdrop-blur-md">
+      <nav className="relative flex flex-col gap-3 mt-4">
+        {/* PESTAÑAS PRINCIPALES */}
+        <div className="flex gap-2 bg-slate-900/60 p-1.5 rounded-[24px] border border-white/10 backdrop-blur-xl shadow-2xl">
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
               activeTab === 'general' 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.3)]' 
                 : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
             }`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5" />
+            <LayoutDashboard className="w-4 h-4" />
             Clasificación
           </button>
           
           <button
             onClick={() => setActiveTab('records')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`flex-1 flex items-center justify-center gap-3 py-4 rounded-[18px] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
               activeTab === 'records' 
-                ? 'bg-amber-500 text-white shadow-lg shadow-amber-600/20' 
+                ? 'bg-amber-500 text-white shadow-[0_10px_30px_rgba(245,158,11,0.3)]' 
                 : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
             }`}
           >
-            <Flame className="w-3.5 h-3.5" />
+            <Flame className="w-4 h-4" />
             Records
           </button>
         </div>
 
+        {/* BOTÓN ENTRENADOR VIRTUAL DESTACADO */}
         <button
           onClick={() => setActiveTab('ai')}
-          className={`group relative overflow-hidden flex items-center justify-between gap-4 p-5 rounded-[22px] transition-all border ${
+          className={`group relative overflow-hidden flex items-center justify-between gap-4 p-5 rounded-[26px] transition-all duration-500 border ${
             activeTab === 'ai' 
-              ? 'bg-purple-600 border-purple-500 text-white shadow-[0_15px_40px_rgba(168,85,247,0.25)]' 
-              : 'bg-gradient-to-r from-purple-900/40 to-slate-900 border-purple-500/20 text-slate-300 hover:border-purple-500/50'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white shadow-[0_20px_50px_rgba(168,85,247,0.3)] scale-[1.01]' 
+              : 'bg-gradient-to-r from-purple-900/50 to-slate-900 border-purple-500/20 text-slate-300 hover:border-purple-500/50 hover:shadow-xl'
           }`}
         >
-          <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'ai' ? 'bg-white/20' : 'bg-purple-600'}`}>
-              <BrainCircuit className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-5">
+            <div className={`w-12 h-12 rounded-[18px] flex items-center justify-center transition-all duration-500 shadow-lg ${activeTab === 'ai' ? 'bg-white/20 scale-110' : 'bg-purple-600 group-hover:scale-110'}`}>
+              <BrainCircuit className="w-7 h-7 text-white" />
             </div>
             <div className="text-left">
-              <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-0.5 ${activeTab === 'ai' ? 'text-purple-200' : 'text-purple-400'}`}>Acceso Prioritario</p>
-              <h3 className="text-sm font-black italic uppercase tracking-tight">Soy tu entrenador virtual</h3>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className={`text-[9px] font-black uppercase tracking-[0.3em] ${activeTab === 'ai' ? 'text-purple-200' : 'text-purple-400'}`}>SISTEMA AI ACTIVO</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+              </div>
+              <h3 className="text-base font-black italic uppercase tracking-tight">Soy tu entrenador virtual</h3>
             </div>
           </div>
-          <ChevronRight className={`w-5 h-5 transition-transform group-hover:translate-x-1 ${activeTab === 'ai' ? 'text-white' : 'text-purple-500'}`} />
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-black uppercase tracking-widest hidden sm:block ${activeTab === 'ai' ? 'text-white' : 'text-slate-500'}`}>Consultar</span>
+            <ChevronRight className={`w-5 h-5 transition-transform duration-500 group-hover:translate-x-1.5 ${activeTab === 'ai' ? 'text-white' : 'text-purple-500'}`} />
+          </div>
           
-          {/* Efecto de brillo */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          {/* Efecto de barrido de luz */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] transition-transform duration-1000"></div>
         </button>
       </nav>
+
+      <style>{`
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
 
       {/* CONTENIDO SEGÚN PESTAÑA */}
       <div className="mt-8">
         {activeTab === 'general' ? (
-          <div className="animate-in fade-in duration-700 space-y-12">
+          <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-12">
             <GeneralTable players={PLAYERS} stats={stats} />
-            <div className="h-[400px]">
+            <div className="h-[450px]">
               <EvolutionChart data={chartData} players={PLAYERS} />
             </div>
             
-            <div className="pt-10">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
-                <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter font-heading underline decoration-blue-500 decoration-4 underline-offset-8">Resultados</h2>
+            <div className="pt-16">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+                <div className="text-center md:text-left">
+                  <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter font-heading leading-none">
+                    Resultados <span className="text-blue-500 block sm:inline">de Etapa</span>
+                  </h2>
+                  <div className="h-1 w-20 bg-blue-600 mt-2 mx-auto md:mx-0"></div>
+                </div>
                 <Filters 
                   categories={CATEGORIES} 
                   selectedCategoryId={selectedCategoryId} 
@@ -182,7 +196,7 @@ const App: React.FC = () => {
             </div>
           </div>
         ) : activeTab === 'records' ? (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-12">
+          <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 space-y-12">
             <MortadelaTable entries={MORTADELAS} players={PLAYERS} />
             <AbandonosTable records={WITHDRAWALS} players={PLAYERS} />
           </div>

@@ -17,6 +17,35 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
     setOpenRaceId(openRaceId === id ? null : id);
   };
 
+  const getPCSRaceUrl = (raceName: string) => {
+    const slugs: Record<string, string> = {
+      'Tour Down Under': 'tour-down-under',
+      'Alula Tour': 'alula-tour',
+      'Etoile de Bessèges': 'etoile-de-besseges',
+      'Comunidad Valenciana': 'volta-a-la-comunitat-valenciana',
+      'Tour de Omán': 'tour-of-oman',
+      'UAE Tour': 'uae-tour',
+      'Vuelta al Algarve': 'volta-ao-algarve',
+      'Ruta del Sol': 'vuelta-a-andalucia',
+      'París-Niza': 'paris-nice',
+      'Tirreno-Adriático': 'tirreno-adriatico',
+      'Volta a Catalunya': 'volta-a-catalunya',
+      'Itzulia Basque Country': 'itzulia-basque-country',
+      'O Gran Camiño': 'o-gran-camino',
+      'Tour de Romandía': 'tour-de-romandie',
+      'Giro d\'Italia': 'giro-d-italia',
+      'Critérium du Dauphiné': 'criterium-du-dauphine',
+      'Tour de Suiza': 'tour-de-suisse',
+      'Tour de France': 'tour-de-france',
+      'Tour de Polonia': 'tour-de-pologne',
+      'Renewi Tour': 'renewi-tour',
+      'Vuelta a España': 'vuelta-a-espana',
+    };
+    
+    const slug = slugs[raceName] || raceName.toLowerCase().replace(/\s+/g, '-');
+    return `https://www.procyclingstats.com/race/${slug}/2026/route/stage-profiles`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
@@ -46,7 +75,7 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
                 <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
                   <div className="flex flex-col">
                     <span className="text-white font-bold text-lg leading-tight">{race.name}</span>
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center flex-wrap gap-3 mt-1">
                        <span className="flex items-center gap-1 text-slate-500 text-xs font-medium">
                          <Calendar className="w-3 h-3" />
                          {new Date(race.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
@@ -54,6 +83,16 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
                        <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
                          {category?.name}
                        </span>
+                       <a 
+                         href={getPCSRaceUrl(race.name)} 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 text-[10px] font-black uppercase tracking-widest hover:bg-blue-600/40 transition-all border border-blue-500/30"
+                         onClick={(e) => e.stopPropagation()}
+                       >
+                         <MapPin className="w-2.5 h-2.5" />
+                         Perfiles de la carrera
+                       </a>
                     </div>
                   </div>
                 </div>

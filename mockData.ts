@@ -16,6 +16,7 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const MORTADELAS: MortadelaEntry[] = [
+  { cyclist: 'Mezgec', points: 153, playerName: 'CHARLOTTE / POSTAL', raceName: 'UAE Tour' },
   { cyclist: 'Froidevaux', points: 194, playerName: 'LA GALIA', raceName: 'Alula' },
   { cyclist: 'Van Der Tuk', points: 190, playerName: 'US POSTAL', raceName: 'Valenciana' },
   { cyclist: 'Mouris', points: 138, playerName: 'US POSTAL', raceName: 'Besseges' },
@@ -27,13 +28,16 @@ export const MORTADELAS: MortadelaEntry[] = [
 export const WITHDRAWALS: WithdrawalRecord[] = [
   {
     playerName: 'US POSTAL',
-    total: 3,
+    total: 5,
     races: {
       'TDU': 'Narváez, Van Poppel',
       'Alula': '0',
       'CV': '0',
       'Besseges': 'Groenewegen',
-      'Omán': '0'
+      'Omán': '0',
+      'UAE Tour': '0',
+      'Algarve': 'Morgado',
+      'Ruta del Sol': 'Laporte'
     }
   },
   {
@@ -44,7 +48,10 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Alula': 'no la hizo',
       'CV': 'Cian',
       'Besseges': 'Groenewegen, Biermans',
-      'Omán': 'Oliveira, Bettiol'
+      'Omán': 'Oliveira, Bettiol',
+      'UAE Tour': '0',
+      'Algarve': '0',
+      'Ruta del Sol': '0'
     }
   },
   {
@@ -55,18 +62,24 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Alula': '0',
       'CV': 'Pedersen',
       'Besseges': 'Van Hemelen, Pringle',
-      'Omán': 'Lemmen'
+      'Omán': 'Lemmen',
+      'UAE Tour': '0',
+      'Algarve': '0',
+      'Ruta del Sol': '0'
     }
   },
   {
     playerName: 'TEAM CHARLOTTE',
-    total: 8,
+    total: 9,
     races: {
       'TDU': 'Narváez, Van Eetvelt, Van Poppel',
       'Alula': "D'Amato",
       'CV': 'Foss',
       'Besseges': 'Crabbe, Pringle, Parisini',
-      'Omán': '0'
+      'Omán': '0',
+      'UAE Tour': '0',
+      'Algarve': '0',
+      'Ruta del Sol': 'Laporte'
     }
   }
 ];
@@ -77,9 +90,9 @@ export const RACES: Race[] = [
   { id: 'r_besseges', name: 'Etoile de Bessèges', categoryId: 'c4', date: '2026-02-04', status: RaceStatus.PLAYED },
   { id: 'r_valenciana', name: 'Comunidad Valenciana', categoryId: 'c4', date: '2026-02-04', status: RaceStatus.PLAYED },
   { id: 'r_oman', name: 'Tour de Omán', categoryId: 'c4', date: '2026-02-10', status: RaceStatus.PLAYED },
-  { id: 'r_uae', name: 'UAE Tour', categoryId: 'c3', date: '2026-02-16', status: RaceStatus.UPCOMING },
-  { id: 'r_alg', name: 'Vuelta al Algarve', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.UPCOMING },
-  { id: 'r_sol', name: 'Ruta del Sol', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.UPCOMING },
+  { id: 'r_uae', name: 'UAE Tour', categoryId: 'c3', date: '2026-02-16', status: RaceStatus.PLAYED },
+  { id: 'r_alg', name: 'Vuelta al Algarve', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.PLAYED },
+  { id: 'r_sol', name: 'Ruta del Sol', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.PLAYED },
   { id: 'r_pn', name: 'París-Niza', categoryId: 'c2', date: '2026-03-08', status: RaceStatus.UPCOMING },
   { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.UPCOMING },
   { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.UPCOMING },
@@ -116,6 +129,18 @@ export const RESULTS: Result[] = [
   { id: 'res_18', raceId: 'r_oman', playerId: 'p2', points: 0 },
   { id: 'res_19', raceId: 'r_oman', playerId: 'p3', points: 4 },
   { id: 'res_20', raceId: 'r_oman', playerId: 'p4', points: 2 },
+  { id: 'res_21', raceId: 'r_uae', playerId: 'p1', points: 2 },
+  { id: 'res_22', raceId: 'r_uae', playerId: 'p2', points: 1 },
+  { id: 'res_23', raceId: 'r_uae', playerId: 'p3', points: 3 },
+  { id: 'res_24', raceId: 'r_uae', playerId: 'p4', points: 5 },
+  { id: 'res_25', raceId: 'r_sol', playerId: 'p1', points: 3 },
+  { id: 'res_26', raceId: 'r_sol', playerId: 'p2', points: 0 },
+  { id: 'res_27', raceId: 'r_sol', playerId: 'p3', points: 2 },
+  { id: 'res_28', raceId: 'r_sol', playerId: 'p4', points: 1 },
+  { id: 'res_29', raceId: 'r_alg', playerId: 'p1', points: 1 },
+  { id: 'res_30', raceId: 'r_alg', playerId: 'p2', points: 0 },
+  { id: 'res_31', raceId: 'r_alg', playerId: 'p3', points: 3 },
+  { id: 'res_32', raceId: 'r_alg', playerId: 'p4', points: 2 },
 ];
 
 export const MOCK_RESULTS = RESULTS;

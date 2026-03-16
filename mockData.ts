@@ -28,7 +28,7 @@ export const MORTADELAS: MortadelaEntry[] = [
 export const WITHDRAWALS: WithdrawalRecord[] = [
   {
     playerName: 'US POSTAL',
-    total: 5,
+    total: 9,
     races: {
       'TDU': 'Narváez, Van Poppel',
       'Alula': '0',
@@ -37,12 +37,14 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Omán': '0',
       'UAE Tour': '0',
       'Algarve': 'Morgado',
-      'Ruta del Sol': 'Laporte'
+      'Ruta del Sol': 'Laporte',
+      'PN': 'Girmay, Bol, Ayuso, Arndt',
+      'Tirreno': '0'
     }
   },
   {
     playerName: 'VOXDALÁS',
-    total: 9,
+    total: 11,
     races: {
       'TDU': 'Narváez, Strong, Torres, Van der Meulen',
       'Alula': 'no la hizo',
@@ -51,12 +53,14 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Omán': 'Oliveira, Bettiol',
       'UAE Tour': '0',
       'Algarve': '0',
-      'Ruta del Sol': '0'
+      'Ruta del Sol': '0',
+      'PN': 'Girmay, Onley',
+      'Tirreno': '0'
     }
   },
   {
     playerName: 'LA GALIA',
-    total: 6,
+    total: 14,
     races: {
       'TDU': 'Narváez, Van Etvelt',
       'Alula': '0',
@@ -65,12 +69,14 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Omán': 'Lemmen',
       'UAE Tour': '0',
       'Algarve': '0',
-      'Ruta del Sol': '0'
+      'Ruta del Sol': '0',
+      'PN': 'Ayuso, Onley, Costiou, Pluimers y F. Christen',
+      'Tirreno': 'Van Wilder, Kron, Strong'
     }
   },
   {
     playerName: 'TEAM CHARLOTTE',
-    total: 9,
+    total: 11,
     races: {
       'TDU': 'Narváez, Van Eetvelt, Van Poppel',
       'Alula': "D'Amato",
@@ -79,7 +85,9 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Omán': '0',
       'UAE Tour': '0',
       'Algarve': '0',
-      'Ruta del Sol': 'Laporte'
+      'Ruta del Sol': 'Laporte',
+      'PN': 'Ayuso, Bol',
+      'Tirreno': '0'
     }
   }
 ];
@@ -93,8 +101,8 @@ export const RACES: Race[] = [
   { id: 'r_uae', name: 'UAE Tour', categoryId: 'c3', date: '2026-02-16', status: RaceStatus.PLAYED },
   { id: 'r_alg', name: 'Vuelta al Algarve', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.PLAYED },
   { id: 'r_sol', name: 'Ruta del Sol', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.PLAYED },
-  { id: 'r_pn', name: 'París-Niza', categoryId: 'c2', date: '2026-03-08', status: RaceStatus.UPCOMING },
-  { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.UPCOMING },
+  { id: 'r_pn', name: 'París-Niza', categoryId: 'c2', date: '2026-03-08', status: RaceStatus.PLAYED },
+  { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.PLAYED },
   { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.UPCOMING },
   { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.UPCOMING },
   { id: 'r_gc', name: 'O Gran Camiño', categoryId: 'c4', date: '2026-04-14', status: RaceStatus.UPCOMING },
@@ -141,6 +149,14 @@ export const RESULTS: Result[] = [
   { id: 'res_30', raceId: 'r_alg', playerId: 'p2', points: 0 },
   { id: 'res_31', raceId: 'r_alg', playerId: 'p3', points: 3 },
   { id: 'res_32', raceId: 'r_alg', playerId: 'p4', points: 2 },
+  { id: 'res_33', raceId: 'r_pn', playerId: 'p3', points: 10 },
+  { id: 'res_34', raceId: 'r_pn', playerId: 'p2', points: 6 },
+  { id: 'res_35', raceId: 'r_pn', playerId: 'p1', points: 4 },
+  { id: 'res_36', raceId: 'r_pn', playerId: 'p4', points: 2 },
+  { id: 'res_37', raceId: 'r_ta', playerId: 'p3', points: 9 },
+  { id: 'res_38', raceId: 'r_ta', playerId: 'p1', points: 6 },
+  { id: 'res_39', raceId: 'r_ta', playerId: 'p4', points: 4 },
+  { id: 'res_40', raceId: 'r_ta', playerId: 'p2', points: 2 },
 ];
 
 export const MOCK_RESULTS = RESULTS;

@@ -28,7 +28,7 @@ export const MORTADELAS: MortadelaEntry[] = [
 export const WITHDRAWALS: WithdrawalRecord[] = [
   {
     playerName: 'US POSTAL',
-    total: 9,
+    total: 10,
     races: {
       'TDU': 'Narváez, Van Poppel',
       'Alula': '0',
@@ -39,12 +39,13 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Algarve': 'Morgado',
       'Ruta del Sol': 'Laporte',
       'PN': 'Girmay, Bol, Ayuso, Arndt',
-      'Tirreno': '0'
+      'Tirreno': '0',
+      'Volta': 'Pidcock'
     }
   },
   {
     playerName: 'VOXDALÁS',
-    total: 11,
+    total: 14,
     races: {
       'TDU': 'Narváez, Strong, Torres, Van der Meulen',
       'Alula': 'no la hizo',
@@ -55,12 +56,13 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Algarve': '0',
       'Ruta del Sol': '0',
       'PN': 'Girmay, Onley',
-      'Tirreno': '0'
+      'Tirreno': '0',
+      'Volta': 'Pidcock, Lutsenko, Patrick Gamper'
     }
   },
   {
     playerName: 'LA GALIA',
-    total: 14,
+    total: 15,
     races: {
       'TDU': 'Narváez, Van Etvelt',
       'Alula': '0',
@@ -71,7 +73,8 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Algarve': '0',
       'Ruta del Sol': '0',
       'PN': 'Ayuso, Onley, Costiou, Pluimers y F. Christen',
-      'Tirreno': 'Van Wilder, Kron, Strong'
+      'Tirreno': 'Van Wilder, Kron, Strong',
+      'Volta': 'Pidcock'
     }
   },
   {
@@ -87,7 +90,8 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Algarve': '0',
       'Ruta del Sol': 'Laporte',
       'PN': 'Ayuso, Bol',
-      'Tirreno': '0'
+      'Tirreno': '0',
+      'Volta': '0'
     }
   }
 ];
@@ -103,7 +107,7 @@ export const RACES: Race[] = [
   { id: 'r_sol', name: 'Ruta del Sol', categoryId: 'c4', date: '2026-02-18', status: RaceStatus.PLAYED },
   { id: 'r_pn', name: 'París-Niza', categoryId: 'c2', date: '2026-03-08', status: RaceStatus.PLAYED },
   { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.PLAYED },
-  { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.UPCOMING },
+  { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.PLAYED },
   { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.UPCOMING },
   { id: 'r_gc', name: 'O Gran Camiño', categoryId: 'c4', date: '2026-04-14', status: RaceStatus.UPCOMING },
   { id: 'r_rom', name: 'Tour de Romandía', categoryId: 'c3', date: '2026-04-28', status: RaceStatus.UPCOMING },
@@ -157,6 +161,10 @@ export const RESULTS: Result[] = [
   { id: 'res_38', raceId: 'r_ta', playerId: 'p1', points: 6 },
   { id: 'res_39', raceId: 'r_ta', playerId: 'p4', points: 4 },
   { id: 'res_40', raceId: 'r_ta', playerId: 'p2', points: 2 },
+  { id: 'res_41', raceId: 'r_cat', playerId: 'p4', points: 9 },
+  { id: 'res_42', raceId: 'r_cat', playerId: 'p2', points: 6 },
+  { id: 'res_43', raceId: 'r_cat', playerId: 'p3', points: 4 },
+  { id: 'res_44', raceId: 'r_cat', playerId: 'p1', points: 2 },
 ];
 
 export const MOCK_RESULTS = RESULTS;

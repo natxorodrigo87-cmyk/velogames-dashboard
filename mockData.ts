@@ -109,7 +109,6 @@ export const RACES: Race[] = [
   { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.PLAYED },
   { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.PLAYED },
   { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.UPCOMING },
-  { id: 'r_gc', name: 'O Gran Camiño', categoryId: 'c4', date: '2026-04-14', status: RaceStatus.UPCOMING },
   { id: 'r_rom', name: 'Tour de Romandía', categoryId: 'c3', date: '2026-04-28', status: RaceStatus.UPCOMING },
   { id: 'r_giro', name: 'Giro d\'Italia', categoryId: 'c1', date: '2026-05-08', status: RaceStatus.UPCOMING },
   { id: 'r_dau', name: 'Critérium du Dauphiné', categoryId: 'c2', date: '2026-06-07', status: RaceStatus.UPCOMING },

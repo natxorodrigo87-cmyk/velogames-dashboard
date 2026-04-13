@@ -23,12 +23,13 @@ export const MORTADELAS: MortadelaEntry[] = [
   { cyclist: 'Bleddyn', points: 112, playerName: 'CHARLOTTE / POSTAL', raceName: 'TDU' },
   { cyclist: 'Hvideberg', points: 96, playerName: 'US POSTAL', raceName: 'Oman' },
   { cyclist: 'Vanghelewe', points: 48, playerName: 'US POSTAL', raceName: 'Oman' },
+  { cyclist: 'Ibon Ruiz', points: 74, playerName: 'TEAM CHARLOTTE', raceName: 'Itzulia' },
 ];
 
 export const WITHDRAWALS: WithdrawalRecord[] = [
   {
     playerName: 'US POSTAL',
-    total: 10,
+    total: 13,
     races: {
       'TDU': 'Narváez, Van Poppel',
       'Alula': '0',
@@ -40,12 +41,13 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Ruta del Sol': 'Laporte',
       'PN': 'Girmay, Bol, Ayuso, Arndt',
       'Tirreno': '0',
-      'Volta': 'Pidcock'
+      'Volta': 'Pidcock',
+      'Itzulia': 'del Toro, Okamika, Veistroffer'
     }
   },
   {
     playerName: 'VOXDALÁS',
-    total: 14,
+    total: 17,
     races: {
       'TDU': 'Narváez, Strong, Torres, Van der Meulen',
       'Alula': 'no la hizo',
@@ -57,12 +59,13 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Ruta del Sol': '0',
       'PN': 'Girmay, Onley',
       'Tirreno': '0',
-      'Volta': 'Pidcock, Lutsenko, Patrick Gamper'
+      'Volta': 'Pidcock, Lutsenko, Patrick Gamper',
+      'Itzulia': 'Tulett, Elósegui, Ermakov'
     }
   },
   {
     playerName: 'LA GALIA',
-    total: 15,
+    total: 17,
     races: {
       'TDU': 'Narváez, Van Etvelt',
       'Alula': '0',
@@ -74,12 +77,13 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Ruta del Sol': '0',
       'PN': 'Ayuso, Onley, Costiou, Pluimers y F. Christen',
       'Tirreno': 'Van Wilder, Kron, Strong',
-      'Volta': 'Pidcock'
+      'Volta': 'Pidcock',
+      'Itzulia': 'del Toro, Labrosse'
     }
   },
   {
     playerName: 'TEAM CHARLOTTE',
-    total: 11,
+    total: 15,
     races: {
       'TDU': 'Narváez, Van Eetvelt, Van Poppel',
       'Alula': "D'Amato",
@@ -91,7 +95,8 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'Ruta del Sol': 'Laporte',
       'PN': 'Ayuso, Bol',
       'Tirreno': '0',
-      'Volta': '0'
+      'Volta': '0',
+      'Itzulia': 'Ayuso, del Toro, Brenner, Fernández'
     }
   }
 ];
@@ -108,7 +113,7 @@ export const RACES: Race[] = [
   { id: 'r_pn', name: 'París-Niza', categoryId: 'c2', date: '2026-03-08', status: RaceStatus.PLAYED },
   { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.PLAYED },
   { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.PLAYED },
-  { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.UPCOMING },
+  { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.PLAYED },
   { id: 'r_rom', name: 'Tour de Romandía', categoryId: 'c3', date: '2026-04-28', status: RaceStatus.UPCOMING },
   { id: 'r_giro', name: 'Giro d\'Italia', categoryId: 'c1', date: '2026-05-08', status: RaceStatus.UPCOMING },
   { id: 'r_dau', name: 'Critérium du Dauphiné', categoryId: 'c2', date: '2026-06-07', status: RaceStatus.UPCOMING },
@@ -164,6 +169,10 @@ export const RESULTS: Result[] = [
   { id: 'res_42', raceId: 'r_cat', playerId: 'p2', points: 6 },
   { id: 'res_43', raceId: 'r_cat', playerId: 'p3', points: 4 },
   { id: 'res_44', raceId: 'r_cat', playerId: 'p1', points: 2 },
+  { id: 'res_45', raceId: 'r_itz', playerId: 'p2', points: 9 },
+  { id: 'res_46', raceId: 'r_itz', playerId: 'p1', points: 6 },
+  { id: 'res_47', raceId: 'r_itz', playerId: 'p4', points: 4 },
+  { id: 'res_48', raceId: 'r_itz', playerId: 'p3', points: 2 },
 ];
 
 export const MOCK_RESULTS = RESULTS;

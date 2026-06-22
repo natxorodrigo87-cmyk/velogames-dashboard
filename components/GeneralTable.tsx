@@ -9,7 +9,16 @@ interface GeneralTableProps {
 }
 
 const GeneralTable: React.FC<GeneralTableProps> = ({ players, stats }) => {
-  const sortedStats = [...stats].sort((a, b) => b.totalPoints - a.totalPoints);
+  const sortedStats = [...stats].sort((a, b) => {
+    if (b.totalPoints !== a.totalPoints) {
+      return b.totalPoints - a.totalPoints;
+    }
+    if (b.racesWon !== a.racesWon) {
+      return b.racesWon - a.racesWon;
+    }
+    const priority: Record<string, number> = { 'p3': 1, 'p1': 2, 'p4': 3, 'p2': 4 };
+    return (priority[a.playerId] || 99) - (priority[b.playerId] || 99);
+  });
 
   return (
     <div className="bg-slate-900/80 border border-white/10 rounded-3xl overflow-hidden backdrop-blur-2xl shadow-2xl">

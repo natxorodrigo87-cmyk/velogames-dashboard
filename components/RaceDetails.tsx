@@ -58,6 +58,13 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
           const isUpcoming = race.status === RaceStatus.UPCOMING;
           const category = categories.find(c => c.id === race.categoryId);
           const raceResults = results.filter(r => r.raceId === race.id);
+          const maxPoints = raceResults.length > 0 ? Math.max(...raceResults.map(r => r.points)) : 0;
+          const winners = raceResults.length > 0 
+            ? players.filter(p => {
+                const res = raceResults.find(r => r.playerId === p.id);
+                return res && res.points === maxPoints;
+              })
+            : [];
           
           return (
             <div 
@@ -93,6 +100,11 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
                          <MapPin className="w-2.5 h-2.5" />
                          Perfiles de la carrera
                        </a>
+                       {!isUpcoming && winners.length > 0 && (
+                         <span className="px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 flex items-center gap-1">
+                           🏆 {winners.map(w => w.name).join(' / ')}
+                         </span>
+                       )}
                     </div>
                   </div>
                 </div>
@@ -120,6 +132,15 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
 
               {isOpen && !isUpcoming && (
                 <div className="px-5 pb-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                  {/* Recuadro Destacado de Ganador */}
+                  <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-yellow-500/10 via-yellow-500/5 to-transparent border border-yellow-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-xs font-black text-yellow-500 uppercase tracking-widest flex items-center gap-1.5">
+                      🏆 GANADOR DE LA PORRA
+                    </span>
+                    <span className="text-xs font-black text-white uppercase tracking-wider">
+                      {winners.map(w => w.name).join(' y ')} — <span className="text-yellow-400 font-bold">{maxPoints} pts</span>
+                    </span>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                     {players.map(player => {
                       const result = raceResults.find(r => r.playerId === player.id);

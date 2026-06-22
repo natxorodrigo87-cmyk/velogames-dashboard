@@ -42,7 +42,11 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'PN': 'Girmay, Bol, Ayuso, Arndt',
       'Tirreno': '0',
       'Volta': 'Pidcock',
-      'Itzulia': 'del Toro, Okamika, Veistroffer'
+      'Itzulia': 'del Toro, Okamika, Veistroffer',
+      'Romandía': '0',
+      'Giro': '0',
+      'Dauphiné': '0',
+      'Suiza': '0'
     }
   },
   {
@@ -60,7 +64,11 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'PN': 'Girmay, Onley',
       'Tirreno': '0',
       'Volta': 'Pidcock, Lutsenko, Patrick Gamper',
-      'Itzulia': 'Tulett, Elósegui, Ermakov'
+      'Itzulia': 'Tulett, Elósegui, Ermakov',
+      'Romandía': '0',
+      'Giro': '0',
+      'Dauphiné': '0',
+      'Suiza': '0'
     }
   },
   {
@@ -78,7 +86,11 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'PN': 'Ayuso, Onley, Costiou, Pluimers y F. Christen',
       'Tirreno': 'Van Wilder, Kron, Strong',
       'Volta': 'Pidcock',
-      'Itzulia': 'del Toro, Labrosse'
+      'Itzulia': 'del Toro, Labrosse',
+      'Romandía': '0',
+      'Giro': '0',
+      'Dauphiné': '0',
+      'Suiza': '0'
     }
   },
   {
@@ -96,7 +108,11 @@ export const WITHDRAWALS: WithdrawalRecord[] = [
       'PN': 'Ayuso, Bol',
       'Tirreno': '0',
       'Volta': '0',
-      'Itzulia': 'Ayuso, del Toro, Brenner, Fernández'
+      'Itzulia': 'Ayuso, del Toro, Brenner, Fernández',
+      'Romandía': '0',
+      'Giro': '0',
+      'Dauphiné': '0',
+      'Suiza': '0'
     }
   }
 ];
@@ -114,10 +130,10 @@ export const RACES: Race[] = [
   { id: 'r_ta', name: 'Tirreno-Adriático', categoryId: 'c2', date: '2026-03-09', status: RaceStatus.PLAYED },
   { id: 'r_cat', name: 'Volta a Catalunya', categoryId: 'c2', date: '2026-03-23', status: RaceStatus.PLAYED },
   { id: 'r_itz', name: 'Itzulia Basque Country', categoryId: 'c2', date: '2026-04-06', status: RaceStatus.PLAYED },
-  { id: 'r_rom', name: 'Tour de Romandía', categoryId: 'c3', date: '2026-04-28', status: RaceStatus.UPCOMING },
-  { id: 'r_giro', name: 'Giro d\'Italia', categoryId: 'c1', date: '2026-05-08', status: RaceStatus.UPCOMING },
-  { id: 'r_dau', name: 'Critérium du Dauphiné', categoryId: 'c2', date: '2026-06-07', status: RaceStatus.UPCOMING },
-  { id: 'r_sui', name: 'Tour de Suiza', categoryId: 'c3', date: '2026-06-17', status: RaceStatus.UPCOMING },
+  { id: 'r_rom', name: 'Tour de Romandía', categoryId: 'c3', date: '2026-04-28', status: RaceStatus.PLAYED },
+  { id: 'r_giro', name: 'Giro d\'Italia', categoryId: 'c1', date: '2026-05-08', status: RaceStatus.PLAYED },
+  { id: 'r_dau', name: 'Critérium du Dauphiné', categoryId: 'c2', date: '2026-06-07', status: RaceStatus.PLAYED },
+  { id: 'r_sui', name: 'Tour de Suiza', categoryId: 'c3', date: '2026-06-17', status: RaceStatus.PLAYED },
   { id: 'r_tour', name: 'Tour de France', categoryId: 'c1', date: '2026-07-04', status: RaceStatus.UPCOMING },
   { id: 'r_pol', name: 'Tour de Polonia', categoryId: 'c3', date: '2026-08-03', status: RaceStatus.UPCOMING },
   { id: 'r_ren', name: 'Renewi Tour', categoryId: 'c3', date: '2026-08-19', status: RaceStatus.UPCOMING },
@@ -173,6 +189,26 @@ export const RESULTS: Result[] = [
   { id: 'res_46', raceId: 'r_itz', playerId: 'p1', points: 6 },
   { id: 'res_47', raceId: 'r_itz', playerId: 'p4', points: 4 },
   { id: 'res_48', raceId: 'r_itz', playerId: 'p3', points: 2 },
+  // Romandia
+  { id: 'res_49', raceId: 'r_rom', playerId: 'p4', points: 5 },
+  { id: 'res_50', raceId: 'r_rom', playerId: 'p3', points: 3 },
+  { id: 'res_51', raceId: 'r_rom', playerId: 'p2', points: 2 },
+  { id: 'res_52', raceId: 'r_rom', playerId: 'p1', points: 1 },
+  // Giro
+  { id: 'res_53', raceId: 'r_giro', playerId: 'p2', points: 15 },
+  { id: 'res_54', raceId: 'r_giro', playerId: 'p3', points: 10 },
+  { id: 'res_55', raceId: 'r_giro', playerId: 'p1', points: 7 },
+  { id: 'res_56', raceId: 'r_giro', playerId: 'p4', points: 4 },
+  // Dauphine
+  { id: 'res_57', raceId: 'r_dau', playerId: 'p4', points: 9 },
+  { id: 'res_58', raceId: 'r_dau', playerId: 'p1', points: 6 },
+  { id: 'res_59', raceId: 'r_dau', playerId: 'p2', points: 4 },
+  { id: 'res_60', raceId: 'r_dau', playerId: 'p3', points: 2 },
+  // Suiza
+  { id: 'res_61', raceId: 'r_sui', playerId: 'p1', points: 5 },
+  { id: 'res_62', raceId: 'r_sui', playerId: 'p3', points: 3 },
+  { id: 'res_63', raceId: 'r_sui', playerId: 'p4', points: 2 },
+  { id: 'res_64', raceId: 'r_sui', playerId: 'p2', points: 1 },
 ];
 
 export const MOCK_RESULTS = RESULTS;

@@ -41,7 +41,21 @@ const App: React.FC = () => {
   }, []);
 
   const summary = useMemo<LeagueSummary>(() => {
-    const sortedByPoints = [...stats].sort((a, b) => b.totalPoints - a.totalPoints);
+    // Custom tie-breaker sorting: Points DESC, Wins DESC, Priority (P3 > P1 > P4 > P2)
+    const getPriority = (id: string) => {
+      const priority: Record<string, number> = { 'p3': 1, 'p1': 2, 'p4': 3, 'p2': 4 };
+      return priority[id] || 99;
+    };
+
+    const sortedByPoints = [...stats].sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      if (b.racesWon !== a.racesWon) {
+        return b.racesWon - a.racesWon;
+      }
+      return getPriority(a.playerId) - getPriority(b.playerId);
+    });
     const leader = PLAYERS.find(p => p.id === sortedByPoints[0]?.playerId);
     
     const maxWins = Math.max(...stats.map(s => s.racesWon));
@@ -49,13 +63,57 @@ const App: React.FC = () => {
       .filter(s => s.racesWon === maxWins && maxWins > 0)
       .map(s => PLAYERS.find(p => p.id === s.playerId)?.name || '---');
 
+    // Dynamic leadership duration tracker (in terms of races/weeks led after each stage played)
+    const playedRaces = [...RACES]
+      .filter(r => r.status === RaceStatus.PLAYED)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    const leaderCounts: Record<string, number> = {};
+    PLAYERS.forEach(p => leaderCounts[p.id] = 0);
+
+    const cumulativePoints: Record<string, number> = {};
+    PLAYERS.forEach(p => cumulativePoints[p.id] = 0);
+
+    playedRaces.forEach(race => {
+      PLAYERS.forEach(player => {
+        const result = RESULTS.find(r => r.raceId === race.id && r.playerId === player.id);
+        cumulativePoints[player.id] += result ? result.points : 0;
+      });
+
+      let leaderId = PLAYERS[0].id;
+      let maxPoints = -1;
+
+      PLAYERS.forEach(player => {
+        const pts = cumulativePoints[player.id];
+        if (pts > maxPoints) {
+          maxPoints = pts;
+          leaderId = player.id;
+        } else if (pts === maxPoints) {
+          if (getPriority(player.id) < getPriority(leaderId)) {
+            leaderId = player.id;
+          }
+        }
+      });
+
+      if (maxPoints > 0) {
+        leaderCounts[leaderId] = (leaderCounts[leaderId] || 0) + 1;
+      }
+    });
+
+    const leadershipStats = PLAYERS.map(p => ({
+      playerName: p.name,
+      weeks: leaderCounts[p.id] || 0,
+      color: p.color
+    })).sort((a, b) => b.weeks - a.weeks);
+
     return {
       leaderName: leader?.name || '---',
       leaderColor: leader?.color || '#fff',
       totalRaces: RACES.length,
       completedRaces: RACES.filter(r => r.status === RaceStatus.PLAYED).length,
       mostWinsPlayers: mostWinsPlayers.length > 0 ? mostWinsPlayers : ['---'],
-      mostWinsCount: maxWins
+      mostWinsCount: maxWins,
+      leadershipStats
     };
   }, [stats]);
 

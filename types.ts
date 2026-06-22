@@ -65,4 +65,5 @@ export type LeagueSummary = {
   completedRaces: number;
   mostWinsPlayers: string[];
   mostWinsCount: number;
+  leadershipStats?: { playerName: string; weeks: number; color: string }[];
 };

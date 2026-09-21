@@ -23,7 +23,12 @@ const MortadelaTable: React.FC<MortadelaTableProps> = ({ entries, players }) => 
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        {sortedEntries.length === 0 ? (
+          <div className="p-8 text-center text-slate-500 text-xs italic">
+            Aún no hay mortadelas registradas en esta temporada. Se registrarán según avancen las carreras.
+          </div>
+        ) : (
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-950/50">
               <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Rank</th>
@@ -90,6 +95,7 @@ const MortadelaTable: React.FC<MortadelaTableProps> = ({ entries, players }) => 
             })}
           </tbody>
         </table>
+        )}
       </div>
     </div>
   );

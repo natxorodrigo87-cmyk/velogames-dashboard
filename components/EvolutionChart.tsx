@@ -40,6 +40,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const EvolutionChart: React.FC<EvolutionChartProps> = ({ data, players }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 backdrop-blur-md shadow-2xl h-full flex flex-col justify-center items-center text-center min-h-[300px]">
+        <TrendingUp className="text-slate-600 w-12 h-12 mb-3" />
+        <h3 className="text-white font-bold text-base mb-1">Evolución de Puntos</h3>
+        <p className="text-slate-400 text-xs max-w-sm">
+          Aún no se han disputado carreras en esta temporada. La gráfica se generará automáticamente tras finalizar la primera prueba.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 backdrop-blur-md shadow-2xl h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">

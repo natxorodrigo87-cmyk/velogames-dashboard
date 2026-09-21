@@ -8,9 +8,10 @@ interface RaceDetailsProps {
   results: Result[];
   players: Player[];
   categories: Category[];
+  seasonYear?: string;
 }
 
-const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, categories }) => {
+const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, categories, seasonYear = '2026' }) => {
   const [openRaceId, setOpenRaceId] = useState<string | null>(null);
 
   const toggleRace = (id: string) => {
@@ -43,7 +44,7 @@ const RaceDetails: React.FC<RaceDetailsProps> = ({ races, results, players, cate
     };
     
     const slug = slugs[raceName] || raceName.toLowerCase().replace(/\s+/g, '-');
-    return `https://www.procyclingstats.com/race/${slug}/2026/route/stage-profiles`;
+    return `https://www.procyclingstats.com/race/${slug}/${seasonYear}/route/stage-profiles`;
   };
 
   return (

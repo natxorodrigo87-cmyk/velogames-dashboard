@@ -1,5 +1,6 @@
 {
   "name": "DEF Velogames Dashboard",
-  "description": "An interactive dashboard for a private Velogames cycling league. Track points evolution, race details, and annual classifications with a modern, mobile-first design.",
-  "requestFramePermissions": []
+  "description": "An interactive dashboard for a private Velogames cycling league. Track points evolution, race details, multi-season classifications (2026 and 2027), and cycling AI assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

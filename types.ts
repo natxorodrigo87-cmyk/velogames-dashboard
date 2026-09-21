@@ -49,6 +49,7 @@ export type GlobalStats = {
   playerId: string;
   totalPoints: number;
   racesWon: number;
+  grandToursWon?: number;
   averagePoints: number;
 };
 
@@ -58,6 +59,26 @@ export type ChartDataPoint = {
   [key: string]: string | number;
 };
 
+export type LeaderChronologyEntry = {
+  raceNumber: number;
+  raceName: string;
+  date: string;
+  leaderName: string;
+  leaderColor: string;
+  points: number;
+  gapWithSecond: number;
+  isTie: boolean;
+};
+
+export type PlayerLeadershipStats = {
+  playerName: string;
+  color: string;
+  racesAsLeader: number;
+  consecutiveRaces?: number;
+  consecutiveDays: number;
+  dateRangeText?: string;
+};
+
 export type LeagueSummary = {
   leaderName: string;
   leaderColor: string;
@@ -65,5 +86,15 @@ export type LeagueSummary = {
   completedRaces: number;
   mostWinsPlayers: string[];
   mostWinsCount: number;
-  leadershipStats?: { playerName: string; weeks: number; color: string }[];
+  leadershipStats?: PlayerLeadershipStats[];
+  longestStreakPlayer?: {
+    playerName: string;
+    color?: string;
+    days: number;
+    races: number;
+    periodText?: string;
+    startDate?: string;
+    endDate?: string;
+  };
+  chronology?: LeaderChronologyEntry[];
 };
